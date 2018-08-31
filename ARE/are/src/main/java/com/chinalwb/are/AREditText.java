@@ -147,9 +147,9 @@ public class AREditText extends AppCompatEditText {
 					Util.log("afterTextChanged:: s = " + s);
 				}
 
-				if (endPos <= startPos) {
-					Util.log("User deletes: start == " + startPos + " endPos == " + endPos);
-				}
+//				if (endPos <= startPos) {
+//					Util.log("User deletes: start == " + startPos + " endPos == " + endPos);
+//				}
 
 				for (IARE_Style style : sStylesList) {
 					style.applyStyle(s, startPos, endPos);

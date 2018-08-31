@@ -82,6 +82,10 @@ public class Util {
         Editable editable = editText.getText();
         int selectionStart = Selection.getSelectionStart(editable);
         int selectionEnd = Selection.getSelectionEnd(editable);
+        return getCurrentSelectionLines(editText, selectionStart, selectionEnd);
+    }
+
+    public static int[] getCurrentSelectionLines(EditText editText, int selectionStart, int selectionEnd) {
         Layout layout = editText.getLayout();
 
         int[] lines = new int[2];

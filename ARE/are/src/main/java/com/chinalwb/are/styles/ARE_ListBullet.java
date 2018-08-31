@@ -8,6 +8,7 @@ import android.view.View.OnClickListener;
 import android.widget.EditText;
 import android.widget.ImageView;
 
+import com.chinalwb.are.ButtonCheckStatusUtil;
 import com.chinalwb.are.Constants;
 import com.chinalwb.are.Util;
 import com.chinalwb.are.spans.ListBulletSpan;
@@ -23,6 +24,8 @@ public class ARE_ListBullet extends ARE_ABS_FreeStyle {
 
 	private ImageView mListBulletImageView;
 
+	private boolean mListBulletChecked;
+
 	public ARE_ListBullet(ImageView imageView) {
 		this.mListBulletImageView = imageView;
 		setListenerForImageView(this.mListBulletImageView);
@@ -34,135 +37,74 @@ public class ARE_ListBullet extends ARE_ABS_FreeStyle {
 			@Override
 			public void onClick(View v) {
 				EditText editText = getEditText();
-				int currentLine = Util.getCurrentCursorLine(editText);
-				int start = Util.getThisLineStart(editText, currentLine);
-				int end = Util.getThisLineEnd(editText, currentLine);
-
 				Editable editable = editText.getText();
-
+				int[] selectionLines = Util.getCurrentSelectionLines(editText);
+				int start = Util.getThisLineStart(editText, selectionLines[0]);
+				int end = Util.getThisLineEnd(editText, selectionLines[1]);
 				//
-				// Check if there is any ListNumberSpan first.
-				// If there is ListNumberSpan, it means this case:
-				// User has typed in:
+				// Check if there is any ListNumberSpan. If so, remove existing ListNumberSpans
+				// in the selection and reorder ListNumberSpans after the selection.
 				//
+				// For example, the current text is:
 				// 1. aa
 				// 2. bb
 				// 3. cc
+				// 4. dd
 				//
-				// Then user clicks the Bullet icon at 1 or 2 or any other item
-				// He wants to change current ListNumberSpan to ListBulletSpan
-				// 
-				// So it becomes:
-				// For example: user clicks Bullet icon at 2:
+				// Then the user wants to convert "bb" & "cc" to ListBulletSpan, resulting:
 				// 1. aa
 				// * bb
-				// 1. cc
+				// * cc
+				// 1. dd
 				//
-				// Note that "cc" has been restarted from 1
-				
-				int selectionStart = editText.getSelectionStart();
-				int selectionEnd = editText.getSelectionEnd();
-				ListNumberSpan[] listNumberSpans = editable.getSpans(selectionStart,
-						selectionEnd, ListNumberSpan.class);
-				if (null != listNumberSpans && listNumberSpans.length > 0) {
-					changeListNumberSpanToListBulletSpan(editable, listNumberSpans);
-					return;
-				}
+				// Note that "dd" has been restarted from 1
+				// Note that we use start & end instead of selectionStart & selectionEnd because
+				// partial selection should be treated as full-line selection in bullet.
+				ListNumberSpan[] listNumberSpans = editable.getSpans(start, end, ListNumberSpan.class);
+				if (listNumberSpans != null && listNumberSpans.length > 0) {
+					// - Restart the count after the bullet span
+					int len = listNumberSpans.length;
+					ListNumberSpan lastListNumberSpan = listNumberSpans[len - 1];
+					int lastListNumberSpanEnd = editable.getSpanEnd(lastListNumberSpan);
 
-				//
-				// Normal cases
-				// 
-				ListBulletSpan[] listBulletSpans = editable.getSpans(start,
-						end, ListBulletSpan.class);
-				if (null == listBulletSpans || listBulletSpans.length == 0) {
-					//
-					// Current line is not list item span
-					// By clicking the image view, we should make it as
-					// BulletListItemSpan
-					// And ReOrder
-					//
-					// ------------- CASE 1 ---------------
-					// Case 1:
-					// Nothing types in, user just clicks the List image
-					// For this case we need to mark it as BulletListItemSpan
+					// -- Change the content to trigger the editable redraw
+					editable.insert(lastListNumberSpanEnd, Constants.ZERO_WIDTH_SPACE_STR);
+					editable.delete(lastListNumberSpanEnd + 1, lastListNumberSpanEnd + 1);
+					// -- End: Change the content to trigger the editable redraw
 
-					//
-					// -------------- CASE 2 --------------
-					// Case 2:
-					// Before or after the current line, there are already
-					// BulletListItemSpan have been made
-					// Like:
-					// 1. AAA
-					// BBB
-					// 1. CCC
-					//
-					// User puts cursor to the 2nd line: BBB
-					// And clicks the List image
-					// For this case we need to make current line as
-					// BulletListItemSpan
-					// And, we should also reOrder them as:
-					//
-					// 1. AAA
-					// 2. BBB
-					// 3. CCC
-					//
+					ARE_ListNumber.reNumberBehindListItemSpans(lastListNumberSpanEnd + 1, editable, 0);
 
-					//
-					// Case 2
-					//
-					// There are list item spans ahead current editing
-					ListBulletSpan[] aheadListItemSpans = editable.getSpans(
-							start - 2, start - 1, ListBulletSpan.class);
-					if (null != aheadListItemSpans
-							&& aheadListItemSpans.length > 0) {
-						ListBulletSpan previousListItemSpan = aheadListItemSpans[aheadListItemSpans.length - 1];
-						if (null != previousListItemSpan) {
-							int pStart = editable
-									.getSpanStart(previousListItemSpan);
-							int pEnd = editable
-									.getSpanEnd(previousListItemSpan);
-
-							//
-							// Handle this case:
-							// 1. A
-							// B
-							// C
-							// 1. D
-							//
-							// User puts focus to B and click List icon, to
-							// change it to:
-							// 2. B
-							//
-							// Then user puts focus to C and click List icon, to
-							// change it to:
-							// 3. C
-							// For this one, we need to finish the span "2. B"
-							// correctly
-							// Which means we need to set the span end to a
-							// correct value
-							// This is doing this.
-							if (editable.charAt(pEnd - 1) == Constants.CHAR_NEW_LINE) {
-								editable.removeSpan(previousListItemSpan);
-								editable.setSpan(previousListItemSpan, pStart,
-										pEnd - 1,
-										Spannable.SPAN_INCLUSIVE_INCLUSIVE);
-							}
-
-							makeLineAsBullet();
-						}
-					} else {
-						//
-						// Case 1
-						makeLineAsBullet();
-						return;
+					// - Remove all ListNumberSpan
+					for (ListNumberSpan listNumberSpan : listNumberSpans) {
+						editable.removeSpan(listNumberSpan);
 					}
+				}
+				// If all lines have bullet spans, remove all bullet spans. Otherwise, apply bullet
+				// spans to all lines.
+				if (getIsChecked()) {
+					ListBulletSpan[] listBulletSpans = editable.getSpans(start, end, ListBulletSpan.class);
+					for (ListBulletSpan listBulletSpan : listBulletSpans) {
+						editable.removeSpan(listBulletSpan);
+					}
+					setChecked(false);
 				} else {
-					//
-					// Current line is list item span
-					// By clicking the image view, we should remove the
-					// BulletListItemSpan
-					//
-					editable.removeSpan(listBulletSpans[0]);
+					for (int line = selectionLines[0]; line <= selectionLines[1]; ++line) {
+						// Only add ListBulletSpan if there's no such span exists.
+						// For example, the current text is:
+						// * aa
+						// bb
+						//
+						// Then the user selects both lines and clicks bullet icon. In this case, the
+						// bullet span on "aa" should be kept, whereas, a bullet span should be
+						// added to "bb".
+						int lineStart = Util.getThisLineStart(editText, line);
+						int lineEnd = Util.getThisLineEnd(editText, line);
+						int nextSpanStart = editable.nextSpanTransition(lineStart - 1, lineEnd, ListBulletSpan.class);
+						if (nextSpanStart >= lineEnd) {
+							makeLineAsBullet(line);
+						}
+					}
+					setChecked(true);
 				}
 			}
 		});
@@ -170,7 +112,6 @@ public class ARE_ListBullet extends ARE_ABS_FreeStyle {
 
 	@Override
 	public void applyStyle(Editable editable, int start, int end) {
-		logAllBulletListItems(editable);
 		ListBulletSpan[] listSpans = editable.getSpans(start, end,
 				ListBulletSpan.class);
 		if (null == listSpans || listSpans.length == 0) {
@@ -191,10 +132,8 @@ public class ARE_ListBullet extends ARE_ABS_FreeStyle {
 				int previousListSpanIndex = listSpanSize - 1;
 				if (previousListSpanIndex > -1) {
 					ListBulletSpan previousListSpan = listSpans[previousListSpanIndex];
-					int lastListItemSpanStartPos = editable
-							.getSpanStart(previousListSpan);
-					int lastListItemSpanEndPos = editable
-							.getSpanEnd(previousListSpan);
+					int lastListItemSpanStartPos = editable.getSpanStart(previousListSpan);
+					int lastListItemSpanEndPos = editable.getSpanEnd(previousListSpan);
 					CharSequence listItemSpanContent = editable.subSequence(
 							lastListItemSpanStartPos, lastListItemSpanEndPos);
 
@@ -214,9 +153,8 @@ public class ARE_ListBullet extends ARE_ABS_FreeStyle {
 
 						//
 						// Deletes the ZERO_WIDTH_SPACE_STR and \n
-						editable.delete(lastListItemSpanStartPos,
-								lastListItemSpanEndPos);
-						return;
+						editable.delete(lastListItemSpanStartPos, lastListItemSpanEndPos);
+						updateCheckStatus();
 					} else {
 						//
 						// Handle this case:
@@ -242,8 +180,8 @@ public class ARE_ListBullet extends ARE_ABS_FreeStyle {
 									lastListItemSpanStartPos, end - 1,
 									Spanned.SPAN_INCLUSIVE_INCLUSIVE);
 						}
+						makeLineAsBullet();
 					}
-					makeLineAsBullet();
 				} // #End of if it is in ListItemSpans..
 			} // #End of user types \n
 		} else {
@@ -257,13 +195,10 @@ public class ARE_ListBullet extends ARE_ABS_FreeStyle {
 			int spanStart = editable.getSpanStart(theFirstSpan);
 			int spanEnd = editable.getSpanEnd(theFirstSpan);
 
-			Util.log("Delete spanStart = " + spanStart + ", spanEnd = " + spanEnd);
-
 			if (spanStart >= spanEnd) {
-				Util.log("case 1");
-				//
-				// User deletes the last char of the span
-				// So we think he wants to remove the span
+				// Case 1:
+				// Since the last char of the span is deleted, we assume the user wants to remove
+				// the span
 				for (ListBulletSpan listSpan : listSpans) {
 					editable.removeSpan(listSpan);
 				}
@@ -274,19 +209,13 @@ public class ARE_ListBullet extends ARE_ABS_FreeStyle {
 				if (spanStart > 0) {
 					editable.delete(spanStart - 1, spanEnd);
 				}
-			} else if (start == spanStart) {
-				return;
-			} else if (start == spanEnd) {
-				Util.log("case 3");
-				//
-				// User deletes the first char of the span
-				// So we think he wants to remove the span
+			} else if (start != spanStart && start == spanEnd) {
+				// Case 3
+				// Since the user deletes the first char of the span, we assume he wants to remove
+				// the span
 				if (editable.length() > start) {
 					if (editable.charAt(start) == Constants.CHAR_NEW_LINE) {
-						// The error case to handle
-						Util.log("case 3-1");
 						ListBulletSpan[] spans = editable.getSpans(start, start, ListBulletSpan.class);
-						Util.log(" spans len == " + spans.length);
 						if (spans.length > 0) {
 							mergeForward(editable, theFirstSpan, spanStart, spanEnd);
 						}
@@ -294,31 +223,20 @@ public class ARE_ListBullet extends ARE_ABS_FreeStyle {
 						mergeForward(editable, theFirstSpan, spanStart, spanEnd);
 					}
 				}
-			} else if (start > spanStart && end < spanEnd) {
-				//
-				// Handle this case:
-				// *. AAA1
-				// *. BBB2
-				// *. CCC3
-				//
-				// User deletes '1' / '2' / '3'
-				// Or any other character inside of a span
-				//
-				// For this case we won't need do anything
-				// As we need to keep the span styles as they are
-				return;
 			}
 		}
-
-		logAllBulletListItems(editable);
 	} // # End of applyStyle(..)
 
+	private void updateCheckStatus() {
+		mListBulletChecked = ButtonCheckStatusUtil.shouldCheckListBulletButton(getEditText());
+	}
+
 	protected void mergeForward(Editable editable, ListBulletSpan listSpan, int spanStart, int spanEnd) {
-		Util.log("merge forward 1");
+		// Util.log("merge forward 1");
 		if (editable.length() <= spanEnd + 1) {
 			return;
 		}
-		Util.log("merge forward 2");
+		// Util.log("merge forward 2");
 		ListBulletSpan[] targetSpans = editable.getSpans(
 				spanEnd, spanEnd + 1, ListBulletSpan.class);
 		if (targetSpans == null || targetSpans.length == 0) {
@@ -330,7 +248,7 @@ public class ARE_ListBullet extends ARE_ABS_FreeStyle {
 		ListBulletSpan lastTargetSpan = findFirstAndLastBulletSpan.getLastTargetSpan();
 		int targetStart = editable.getSpanStart(firstTargetSpan);
 		int targetEnd = editable.getSpanEnd(lastTargetSpan);
-		Util.log("merge to remove span start == " + targetStart + ", target end = " + targetEnd);
+		// Util.log("merge to remove span start == " + targetStart + ", target end = " + targetEnd);
 
 		int targetLength = targetEnd - targetStart;
 		spanEnd = spanEnd + targetLength;
@@ -343,7 +261,7 @@ public class ARE_ListBullet extends ARE_ABS_FreeStyle {
 			editable.removeSpan(lns);
 		}
 		editable.setSpan(listSpan, spanStart, spanEnd, Spanned.SPAN_INCLUSIVE_INCLUSIVE);
-		Util.log("merge span start == " + spanStart + " end == " + spanEnd);
+		// Util.log("merge span start == " + spanStart + " end == " + spanEnd);
 	}
 
 	private void logAllBulletListItems(Editable editable) {
@@ -379,21 +297,21 @@ public class ARE_ListBullet extends ARE_ABS_FreeStyle {
 		}
 	}
 
-	/**
-	 * 
-	 * @return
-	 */
-	private ListBulletSpan makeLineAsBullet() {
+	private void makeLineAsBullet() {
 		EditText editText = getEditText();
-		int currentLine = Util.getCurrentCursorLine(editText);
-		int start = Util.getThisLineStart(editText, currentLine);
+		makeLineAsBullet(Util.getCurrentCursorLine(editText));
+	}
+
+	private void makeLineAsBullet(int line) {
+		EditText editText = getEditText();
+		int start = Util.getThisLineStart(editText, line);
 		Editable editable = editText.getText();
 		editable.insert(start, Constants.ZERO_WIDTH_SPACE_STR);
-		start = Util.getThisLineStart(editText, currentLine);
-		int end = Util.getThisLineEnd(editText, currentLine);
+		start = Util.getThisLineStart(editText, line);
+		int end = Util.getThisLineEnd(editText, line);
 
 		if (end < 1) {
-			return null;
+			return;
 		}
 		if (editable.charAt(end - 1) == Constants.CHAR_NEW_LINE) {
 			end--;
@@ -402,77 +320,21 @@ public class ARE_ListBullet extends ARE_ABS_FreeStyle {
 		ListBulletSpan BulletListItemSpan = new ListBulletSpan();
 		editable.setSpan(BulletListItemSpan, start, end,
 				Spannable.SPAN_INCLUSIVE_INCLUSIVE);
-
-		return BulletListItemSpan;
 	}
-
-	/**
-	 * Change the selected {@link ListNumberSpan} to {@link ListBulletSpan}
-	 * 
-	 * @param listNumberSpans
-	 */
-	private void changeListNumberSpanToListBulletSpan(
-			Editable editable,
-			ListNumberSpan[] listNumberSpans) {
-
-		if (null == listNumberSpans || listNumberSpans.length == 0) {
-			return;
-		}
-
-		// - 
-		// Handle this case:
-		// User has:
-		// 
-		// 1. AA
-		// 2. BB
-		// 3. CC
-		// 4. DD
-		//
-		// Then user clicks Bullet icon at line 2:
-		//
-		// So it should change to:
-		// 1. AA
-		// * BB
-		// 1. CC
-		// 2. DD 
-		// 
-		// So this is for handling the line after 2nd line.
-		// "CC" starts from 1 again.
-		// 
-		// - Restart the count after the bullet span
-		int len = listNumberSpans.length;
-		ListNumberSpan lastListNumberSpan = listNumberSpans[len - 1];
-		int lastListNumberSpanEnd = editable.getSpanEnd(lastListNumberSpan);
-		
-		// -- Change the content to trigger the editable redraw
-        editable.insert(lastListNumberSpanEnd, Constants.ZERO_WIDTH_SPACE_STR);
-        editable.delete(lastListNumberSpanEnd + 1, lastListNumberSpanEnd + 1);
-        // -- End: Change the content to trigger the editable redraw
-        
-		ARE_ListNumber.reNumberBehindListItemSpans(lastListNumberSpanEnd + 1, editable, 0);
-		
-		// 
-		// - Replace all ListNumberSpan to ListBulletSpan
-		for (ListNumberSpan listNumberSpan : listNumberSpans) {
-			int start = editable.getSpanStart(listNumberSpan);
-			int end = editable.getSpanEnd(listNumberSpan);
-			
-			editable.removeSpan(listNumberSpan);
-			ListBulletSpan listBulletSpan = new ListBulletSpan();
-			editable.setSpan(listBulletSpan, start, end, Spannable.SPAN_INCLUSIVE_INCLUSIVE);
-		}
-		
-	} // #End of changeListNumberSpansToListBulletSpans(..)
 
 	@Override
 	public ImageView getImageView() {
-		// Do nothing
-		return null;
+		return this.mListBulletImageView;
 	}
 
 	@Override
 	public void setChecked(boolean isChecked) {
-		// Do nothing
+		this.mListBulletChecked = isChecked;
+	}
+
+	@Override
+	public boolean getIsChecked() {
+		return this.mListBulletChecked;
 	}
 
 	private class FindFirstAndLastBulletSpan {
