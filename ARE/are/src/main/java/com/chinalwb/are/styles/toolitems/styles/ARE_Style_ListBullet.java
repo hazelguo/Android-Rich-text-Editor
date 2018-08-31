@@ -15,6 +15,7 @@ import com.chinalwb.are.spans.ListBulletSpan;
 import com.chinalwb.are.spans.ListNumberSpan;
 import com.chinalwb.are.styles.ARE_ABS_FreeStyle;
 import com.chinalwb.are.styles.ARE_ListNumber;
+import com.chinalwb.are.styles.toolitems.IARE_ToolItem_Updater;
 
 /**
  * All Rights Reserved.
@@ -28,10 +29,13 @@ public class ARE_Style_ListBullet extends ARE_ABS_FreeStyle {
 
 	private ImageView mListBulletImageView;
 
-	public ARE_Style_ListBullet(AREditText editText, ImageView imageView) {
+	private IARE_ToolItem_Updater mCheckUpdater;
+
+	public ARE_Style_ListBullet(AREditText editText, ImageView imageView, IARE_ToolItem_Updater checkUpdater) {
 		super(editText.getContext());
 		this.mEditText = editText;
 		this.mListBulletImageView = imageView;
+		this.mCheckUpdater = checkUpdater;
 		setListenerForImageView(this.mListBulletImageView);
 	}
 
