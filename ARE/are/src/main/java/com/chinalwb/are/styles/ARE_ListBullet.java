@@ -228,7 +228,7 @@ public class ARE_ListBullet extends ARE_ABS_FreeStyle {
 	} // # End of applyStyle(..)
 
 	private void updateCheckStatus() {
-		mListBulletChecked = ButtonCheckStatusUtil.shouldCheckListBulletButton(getEditText());
+		mListBulletChecked = ButtonCheckStatusUtil.shouldCheckButton(getEditText(), ListBulletSpan.class);
 	}
 
 	protected void mergeForward(Editable editable, ListBulletSpan listSpan, int spanStart, int spanEnd) {

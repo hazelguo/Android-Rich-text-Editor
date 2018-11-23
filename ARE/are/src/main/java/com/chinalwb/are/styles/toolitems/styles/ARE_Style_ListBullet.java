@@ -246,7 +246,7 @@ public class ARE_Style_ListBullet extends ARE_ABS_FreeStyle {
 	} // # End of applyStyle(..)
 
 	private void updateCheckStatus() {
-		updateCheckStatus(ButtonCheckStatusUtil.shouldCheckListBulletButton(getEditText()));
+		updateCheckStatus(ButtonCheckStatusUtil.shouldCheckButton(getEditText(), ListBulletSpan.class));
 	}
 
 	private void updateCheckStatus(boolean isChecked) {

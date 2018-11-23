@@ -6,7 +6,7 @@ import android.widget.EditText;
 import com.chinalwb.are.spans.ListBulletSpan;
 
 public class ButtonCheckStatusUtil {
-    public static boolean shouldCheckListBulletButton(EditText editText) {
+    public static boolean shouldCheckButton(EditText editText, Class type) {
         if (editText.getLayout() != null) {
             Editable editable = editText.getText();
             int[] selectionLines = Util.getCurrentSelectionLines(editText);

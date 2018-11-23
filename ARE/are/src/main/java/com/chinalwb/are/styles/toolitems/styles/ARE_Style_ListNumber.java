@@ -9,6 +9,7 @@ import android.widget.EditText;
 import android.widget.ImageView;
 
 import com.chinalwb.are.AREditText;
+import com.chinalwb.are.ButtonCheckStatusUtil;
 import com.chinalwb.are.Constants;
 import com.chinalwb.are.Util;
 import com.chinalwb.are.spans.ListBulletSpan;
@@ -48,156 +49,54 @@ public class ARE_Style_ListNumber extends ARE_ABS_FreeStyle {
             @Override
             public void onClick(View v) {
                 EditText editText = getEditText();
-                int currentLine = Util.getCurrentCursorLine(editText);
-                int start = Util.getThisLineStart(editText, currentLine);
-                int end = Util.getThisLineEnd(editText, currentLine);
-
                 Editable editable = editText.getText();
+                int[] selectionLines = Util.getCurrentSelectionLines(editText);
+                // Note that we use start & end instead of selectionStart & selectionEnd because
+                // partial selection should be treated as full-line selection in number span.
+                int start = Util.getThisLineStart(editText, selectionLines[0]);
+                int end = Util.getThisLineEnd(editText, selectionLines[1]);
 
-                //
-                // Check if there is any ListNumberSpan first.
-                // If there is ListNumberSpan, it means this case:
-                // User has typed in:
-                //
-                // * aa
-                // * bb
-                // * cc
-                //
-                // Then user clicks the Number icon at 1 or 2 or any other item
-                // He wants to change current ListBulletSpan to ListNumberSpan
-                //
-                // So it becomes:
-                // For example: user clicks Number icon at 2:
-                // * aa
-                // 1. bb
-                // * cc
-
-                int selectionStart = editText.getSelectionStart();
-                int selectionEnd = editText.getSelectionEnd();
-                ListBulletSpan[] listBulletSpans = editable.getSpans(selectionStart,
-                        selectionEnd, ListBulletSpan.class);
-                if (null != listBulletSpans && listBulletSpans.length > 0) {
-                    changeListBulletSpanToListNumberSpan(editable, listBulletSpans);
-                    return;
-                }
-
-                ListNumberSpan[] listNumberSpans = editable.getSpans(start, end,
-                        ListNumberSpan.class);
-                if (null == listNumberSpans || listNumberSpans.length == 0) {
-                    //
-                    // Current line is not list item span
-                    // By clicking the image view, we should make it as
-                    // ListItemSpan
-                    // And ReOrder
-                    //
-                    // ------------ CASE 1 ------------------
-                    // Case 1:
-                    // Nothing types in, user just clicks the List image
-                    // For this case we need to mark it as ListItemSpan
-
-                    //
-                    // ------------ CASE 2 ------------------
-                    // Case 2:
-                    // Before or after the current line, there are already
-                    // ListItemSpan have been made
-                    // Like:
-                    // 1. AAA
-                    // BBB
-                    // 1. CCC
-                    //
-                    // User puts cursor to the 2nd line: BBB
-                    // And clicks the List image
-                    // For this case we need to make current line as
-                    // ListItemSpan
-                    // And, we should also reOrder them as:
-                    //
-                    // 1. AAA
-                    // 2. BBB
-                    // 3. CCC
-                    //
-
-                    // if (end > 0) {} // #End of if (end > 0)
-
-                    //
-                    // Case 2
-                    //
-                    // There are list item spans ahead current editing
-                    int thisNumber = 1;
-                    ListNumberSpan[] aheadListItemSpans = editable.getSpans(
-                            start - 2, start - 1, ListNumberSpan.class);
-                    if (null != aheadListItemSpans
-                            && aheadListItemSpans.length > 0) {
-                        ListNumberSpan previousListItemSpan = aheadListItemSpans[aheadListItemSpans.length - 1];
-                        if (null != previousListItemSpan) {
-                            int pStart = editable
-                                    .getSpanStart(previousListItemSpan);
-                            int pEnd = editable
-                                    .getSpanEnd(previousListItemSpan);
-
-                            //
-                            // Handle this case:
-                            // 1. A
-                            // B
-                            // C
-                            // 1. D
-                            //
-                            // User puts focus to B and click List icon, to
-                            // change it to:
-                            // 2. B
-                            //
-                            // Then user puts focus to C and click List icon, to
-                            // change it to:
-                            // 3. C
-                            // For this one, we need to finish the span "2. B"
-                            // correctly
-                            // Which means we need to set the span end to a
-                            // correct value
-                            // This is doing this.
-                            if (editable.charAt(pEnd - 1) == Constants.CHAR_NEW_LINE) {
-                                editable.removeSpan(previousListItemSpan);
-                                editable.setSpan(previousListItemSpan, pStart,
-                                        pEnd - 1,
-                                        Spannable.SPAN_INCLUSIVE_INCLUSIVE);
-                            }
-
-                            int previousNumber = previousListItemSpan
-                                    .getNumber();
-                            thisNumber = previousNumber + 1;
-                            makeLineAsList(thisNumber);
-                        }
-                    } else {
-                        //
-                        // Case 1
-                        thisNumber = 1;
-                        makeLineAsList(1);
+                // Remove all ListBulletSpan in the selection:
+                //   Convert Case 3 to Case 1.
+                //   Convert Case 4 to a similar case as Case 1 as I explained above.
+                // Note that we don't need to reorder any following ListNumberSpan yet as we will
+                // do it as part of the Case 1
+                ListBulletSpan[] listBulletSpans = editable.getSpans(start, end, ListBulletSpan.class);
+                if (listBulletSpans != null && listBulletSpans.length > 0) {
+                    for (ListBulletSpan listBulletSpan : listBulletSpans) {
+                        editable.removeSpan(listBulletSpan);
                     }
-
-                    //
-                    // Case 2
-                    //
-                    // Handle behind list item spans
-                    // reorder them
-                    // int totalLength = editable.toString().length();
-                    // if (totalLength > end) {}
-                    reNumberBehindListItemSpans(end, editable, thisNumber);
-                } else {
-                    //
-                    // Current line is list item span
-                    // By clicking the image view, we should remove the
-                    // ListItemSpan
-                    ListNumberSpan currentLineListItemSpan = listNumberSpans[0];
-                    int spanEnd = editable.getSpanEnd(currentLineListItemSpan);
-                    editable.removeSpan(currentLineListItemSpan);
-
-                    //
-                    // Change the content to trigger the editable redraw
-                    editable.insert(spanEnd, Constants.ZERO_WIDTH_SPACE_STR);
-                    editable.delete(spanEnd, spanEnd + 1);
-
-                    //
-                    // The new list should start from 1
-                    reNumberBehindListItemSpans(spanEnd, editable, 0);
                 }
+
+                // If all lines in the selection have number spans, remove all number span. (Case 2)
+                // Otherwise, apply number span to lines that don't have number span. (Case 1, 3, 4)
+                // Always reorder following number spans afterwards.
+                int followingStartNumber = 0;
+                if (getIsChecked()) {
+                    ListNumberSpan[] listNumberSpans = editable.getSpans(start, end, ListNumberSpan.class);
+                    for (ListNumberSpan listNumberSpan : listNumberSpans) {
+                        editable.removeSpan(listNumberSpan);
+                    }
+                    setChecked(false);
+                } else {
+                    ListNumberSpan[] aheadListNumberSpans = editable.getSpans(
+                            start - 2, start - 1, ListNumberSpan.class);
+                    if (null != aheadListNumberSpans && aheadListNumberSpans.length > 0) {
+                        ListNumberSpan previousListItemSpan = aheadListNumberSpans[aheadListNumberSpans.length - 1];
+                        followingStartNumber = previousListItemSpan.getNumber();
+                    }
+                    for (int line = selectionLines[0]; line <= selectionLines[1]; ++line) {
+                        followingStartNumber ++;
+                        int lineStart = Util.getThisLineStart(editText, line);
+                        int lineEnd = Util.getThisLineEnd(editText, line);
+                        int nextSpanStart = editable.nextSpanTransition(lineStart - 1, lineEnd, ListNumberSpan.class);
+                        if (nextSpanStart >= lineEnd) {
+                            makeLineAsList(line, followingStartNumber);
+                        }
+                    }
+                    setChecked(true);
+                }
+                reNumberBehindListItemSpans(end + 1, editable, followingStartNumber);
             }
         });
     }
@@ -225,10 +124,8 @@ public class ARE_Style_ListNumber extends ARE_ABS_FreeStyle {
                 int previousListSpanIndex = listSpanSize - 1;
                 if (previousListSpanIndex > -1) {
                     ListNumberSpan previousListSpan = listSpans[previousListSpanIndex];
-                    int lastListItemSpanStartPos = editable
-                            .getSpanStart(previousListSpan);
-                    int lastListItemSpanEndPos = editable
-                            .getSpanEnd(previousListSpan);
+                    int lastListItemSpanStartPos = editable.getSpanStart(previousListSpan);
+                    int lastListItemSpanEndPos = editable.getSpanEnd(previousListSpan);
                     CharSequence listItemSpanContent = editable.subSequence(
                             lastListItemSpanStartPos, lastListItemSpanEndPos);
 
@@ -248,14 +145,13 @@ public class ARE_Style_ListNumber extends ARE_ABS_FreeStyle {
 
                         //
                         // Deletes the ZERO_WIDTH_SPACE_STR and \n
-                        editable.delete(lastListItemSpanStartPos,
-                                lastListItemSpanEndPos);
+                        editable.delete(lastListItemSpanStartPos, lastListItemSpanEndPos);
+                        updateCheckStatus();
 
                         //
                         // Restart the counting for the list item spans after
                         // previousListSpan
-                        reNumberBehindListItemSpans(lastListItemSpanStartPos,
-                                editable, 0);
+                        reNumberBehindListItemSpans(lastListItemSpanStartPos, editable, 0);
                         return;
                     } else {
                         //
@@ -308,13 +204,9 @@ public class ARE_Style_ListNumber extends ARE_ABS_FreeStyle {
             }
 
 
-            Util.log("Delete spanStart = " + spanStart + ", spanEnd = "
-                    + spanEnd + " ,, start == " + start);
             if (spanStart >= spanEnd) {
-                Util.log("case 1");
-                //
-                // User deletes the last char of the span
-                // So we think he wants to remove the span
+                // Case 1:
+                // We assume the user wants to remove the span as the last char of the span is deleted
                 for (ListNumberSpan listSpan : listSpans) {
                     editable.removeSpan(listSpan);
                 }
@@ -335,24 +227,16 @@ public class ARE_Style_ListNumber extends ARE_ABS_FreeStyle {
                     }
                 }
             } else if (start == spanStart) {
-                Util.log("case 2");
                 return;
             } else if (start == spanEnd) {
-                Util.log("case 3");
-                //
-                // User deletes the first char of the span
-                // So we think he wants to remove the span
+                // Case 3:
+                // We assume the user wants to remove the span as the first char of the span is deleted
                 if (editable.length() > start) {
                     if (editable.charAt(start) == Constants.CHAR_NEW_LINE) {
-                        // The error case to handle
-                        Util.log("case 3-1");
                         ListNumberSpan[] spans = editable.getSpans(start, start, ListNumberSpan.class);
-                        Util.log(" spans len == " + spans.length);
                         if (spans.length > 0) {
-                            Util.log("case 3-1-1");
                             mergeForward(editable, theFirstSpan, spanStart, spanEnd);
                         } else {
-                            Util.log("case 3-1-2");
                             editable.removeSpan(spans[0]);
                         }
                     } else {
@@ -360,7 +244,6 @@ public class ARE_Style_ListNumber extends ARE_ABS_FreeStyle {
                     }
                 }
             } else if (start > spanStart && end < spanEnd) {
-                Util.log("case 4");
                 //
                 // Handle this case:
                 // 1. AAA1
@@ -374,10 +257,6 @@ public class ARE_Style_ListNumber extends ARE_ABS_FreeStyle {
                 // As we need to keep the span styles as they are
                 return;
             } else {
-                Util.log("case X");
-                if (editable.length() > start) {
-                    Util.log("start char == " + (int) editable.charAt(start));
-                }
                 //
                 // Handle this case:
                 // 1. A
@@ -493,27 +372,26 @@ public class ARE_Style_ListNumber extends ARE_ABS_FreeStyle {
         }
     }
 
-    /**
-     *
-     *
-     */
     private ListNumberSpan makeLineAsList(int num) {
         EditText editText = getEditText();
-        int currentLine = Util.getCurrentCursorLine(editText);
-        int start = Util.getThisLineStart(editText, currentLine);
-        int end = Util.getThisLineEnd(editText, currentLine);
+        return makeLineAsList(Util.getCurrentCursorLine(editText), num);
+    }
+
+    private ListNumberSpan makeLineAsList(int line, int num) {
+        Util.log("make line as list: " + line + " , " + num);
+        EditText editText = getEditText();
+        int start = Util.getThisLineStart(editText, line);
         Editable editable = editText.getText();
         editable.insert(start, Constants.ZERO_WIDTH_SPACE_STR);
-        start = Util.getThisLineStart(editText, currentLine);
-        end = Util.getThisLineEnd(editText, currentLine);
+        start = Util.getThisLineStart(editText, line);
+        int end = Util.getThisLineEnd(editText, line);
 
         if (end > 0 && editable.charAt(end - 1) == Constants.CHAR_NEW_LINE) {
             end--;
         }
 
         ListNumberSpan listItemSpan = new ListNumberSpan(num);
-        editable.setSpan(listItemSpan, start, end,
-                Spannable.SPAN_INCLUSIVE_INCLUSIVE);
+        editable.setSpan(listItemSpan, start, end, Spannable.SPAN_INCLUSIVE_INCLUSIVE);
 
         return listItemSpan;
     }
@@ -544,6 +422,16 @@ public class ARE_Style_ListNumber extends ARE_ABS_FreeStyle {
         }
     }
 
+    private void updateCheckStatus() {
+        updateCheckStatus(ButtonCheckStatusUtil.shouldCheckButton(getEditText(), ListNumberSpan.class));
+    }
+
+    private void updateCheckStatus(boolean isChecked) {
+        setChecked(isChecked);
+        if (mCheckUpdater != null) {
+            mCheckUpdater.onCheckStatusUpdate(isChecked);
+        }
+    }
 
     /**
      * Change the selected {@link ListBulletSpan} to {@link ListNumberSpan}

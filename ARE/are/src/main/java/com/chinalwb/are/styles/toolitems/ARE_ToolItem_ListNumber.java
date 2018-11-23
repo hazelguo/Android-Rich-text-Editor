@@ -8,6 +8,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 
 import com.chinalwb.are.AREditText;
+import com.chinalwb.are.ButtonCheckStatusUtil;
 import com.chinalwb.are.Constants;
 import com.chinalwb.are.R;
 import com.chinalwb.are.Util;
@@ -60,20 +61,6 @@ public class ARE_ToolItem_ListNumber extends ARE_ToolItem_Abstract {
 
     @Override
     public void onSelectionChanged(int selStart, int selEnd) {
-        EditText editText = getEditText();
-        if (editText.getLayout() != null) {
-            Editable editable = editText.getText();
-            int[] selectionLines = Util.getCurrentSelectionLines(editText);
-            for (int line = selectionLines[0]; line <= selectionLines[1]; ++line) {
-                int lineStart = Util.getThisLineStart(editText, line);
-                int lineEnd = Util.getThisLineEnd(editText, line);
-                int span = editable.nextSpanTransition(lineStart - 1, lineEnd, ListNumberSpan.class);
-                if (span >= lineEnd) {
-                    mToolItemUpdater.onCheckStatusUpdate(false);
-                    return;
-                }
-            }
-            mToolItemUpdater.onCheckStatusUpdate(true);
-        }
+        mToolItemUpdater.onCheckStatusUpdate(ButtonCheckStatusUtil.shouldCheckButton(getEditText(), ListNumberSpan.class));
     }
 }

@@ -10,6 +10,7 @@ import com.chinalwb.are.ButtonCheckStatusUtil;
 import com.chinalwb.are.Constants;
 import com.chinalwb.are.R;
 import com.chinalwb.are.Util;
+import com.chinalwb.are.spans.ListBulletSpan;
 import com.chinalwb.are.styles.IARE_Style;
 import com.chinalwb.are.styles.toolitems.styles.ARE_Style_ListBullet;
 
@@ -58,6 +59,6 @@ public class ARE_ToolItem_ListBullet extends ARE_ToolItem_Abstract {
 
     @Override
     public void onSelectionChanged(int selStart, int selEnd) {
-        mToolItemUpdater.onCheckStatusUpdate(ButtonCheckStatusUtil.shouldCheckListBulletButton(getEditText()));
+        mToolItemUpdater.onCheckStatusUpdate(ButtonCheckStatusUtil.shouldCheckButton(getEditText(), ListBulletSpan.class));
     }
 }
