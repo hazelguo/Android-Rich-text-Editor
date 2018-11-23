@@ -27,10 +27,13 @@ public class ARE_Style_ListNumber extends ARE_ABS_FreeStyle {
 
     private ImageView mListNumberImageView;
 
-    public ARE_Style_ListNumber(AREditText editText, ImageView imageView) {
+    private IARE_ToolItem_Updater mCheckUpdater;
+
+    public ARE_Style_ListNumber(AREditText editText, ImageView imageView, IARE_ToolItem_Updater checkUpdater) {
         super(editText.getContext());
         this.mEditText = editText;
         this.mListNumberImageView = imageView;
+        mCheckUpdater = checkUpdater;
         setListenerForImageView(this.mListNumberImageView);
     }
 
