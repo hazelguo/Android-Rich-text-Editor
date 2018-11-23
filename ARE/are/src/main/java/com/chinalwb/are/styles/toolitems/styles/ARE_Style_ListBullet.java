@@ -18,6 +18,9 @@ import com.chinalwb.are.styles.ARE_ABS_FreeStyle;
 import com.chinalwb.are.styles.ARE_ListNumber;
 import com.chinalwb.are.styles.toolitems.IARE_ToolItem_Updater;
 
+import static com.chinalwb.are.Util.addZeroWidthSpaceStrSafe;
+import static com.chinalwb.are.Util.isEmptyListItemSpan;
+
 /**
  * All Rights Reserved.
  * 
@@ -144,16 +147,14 @@ public class ARE_Style_ListBullet extends ARE_ABS_FreeStyle {
 			// Util.log("ListNumber - total len == " + totalLen);
 			char c = editable.charAt(end - 1);
 			if (c == Constants.CHAR_NEW_LINE) {
-				int listSpanSize = listSpans.length;
-				int previousListSpanIndex = listSpanSize - 1;
-				if (previousListSpanIndex > -1) {
-					ListBulletSpan previousListSpan = listSpans[previousListSpanIndex];
-					int lastListItemSpanStartPos = editable.getSpanStart(previousListSpan);
-					int lastListItemSpanEndPos = editable.getSpanEnd(previousListSpan);
-					CharSequence listItemSpanContent = editable.subSequence(
-							lastListItemSpanStartPos, lastListItemSpanEndPos);
+				int currListSpanIndex = listSpans.length - 1;
+				if (currListSpanIndex > -1) {
+					ListBulletSpan currListSpan = listSpans[currListSpanIndex];
+					int currListSpanStart = editable.getSpanStart(currListSpan);
+					int currListSpanEnd = editable.getSpanEnd(currListSpan);
+					CharSequence currItemSpanContent = editable.subSequence(currListSpanStart, currListSpanEnd);
 
-					if (isEmptyListItemSpan(listItemSpanContent)) {
+					if (isEmptyListItemSpan(currItemSpanContent)) {
 						//
 						// Handle this case:
 						// 1. A
@@ -165,11 +166,11 @@ public class ARE_Style_ListBullet extends ARE_ABS_FreeStyle {
 						//
 						// We need to remove current span and do not re-create
 						// span.
-						editable.removeSpan(previousListSpan);
+						editable.removeSpan(currListSpan);
 
 						//
 						// Deletes the ZERO_WIDTH_SPACE_STR and \n
-						editable.delete(lastListItemSpanStartPos, lastListItemSpanEndPos);
+						editable.delete(currListSpanStart, currListSpanEnd);
 						updateCheckStatus();
 					} else {
 						//
@@ -190,10 +191,10 @@ public class ARE_Style_ListBullet extends ARE_ABS_FreeStyle {
 						// We need to end the first span
 						// Then start the 2nd span
 						// Then reNumber the following list item spans
-						if (end > lastListItemSpanStartPos) {
-							editable.removeSpan(previousListSpan);
-							editable.setSpan(previousListSpan,
-									lastListItemSpanStartPos, end - 1,
+						if (end > currListSpanStart) {
+							editable.removeSpan(currListSpan);
+							editable.setSpan(currListSpan,
+									currListSpanStart, end - 1,
 									Spanned.SPAN_INCLUSIVE_INCLUSIVE);
 						}
 						makeLineAsBullet();
@@ -289,39 +290,6 @@ public class ARE_Style_ListBullet extends ARE_ABS_FreeStyle {
 		// AREditTextUtil.log("merge span start == " + spanStart + " end == " + spanEnd);
 	}
 
-	private void logAllBulletListItems(Editable editable) {
-		ListBulletSpan[] listItemSpans = editable.getSpans(0,
-				editable.length(), ListBulletSpan.class);
-		for (ListBulletSpan span : listItemSpans) {
-			int ss = editable.getSpanStart(span);
-			int se = editable.getSpanEnd(span);
-			Util.log("List All: " + " :: start == " + ss + ", end == " + se);
-		}
-	}
-
-	/**
-	 * Check if this is an empty span.
-	 * 
-	 * <B>OLD COMMENT: and whether it is at the end of the spans list</B>
-	 * 
-	 * @param listItemSpanContent
-	 * @return
-	 */
-	private boolean isEmptyListItemSpan(CharSequence listItemSpanContent) {
-		int spanLen = listItemSpanContent.length();
-		if (spanLen == 2) {
-			//
-			// This case:
-			// 1. A
-			// 2.
-			//
-			// Line 2 is empty
-			return true;
-		} else {
-			return false;
-		}
-	}
-
 	private void makeLineAsBullet() {
 		EditText editText = getEditText();
 		makeLineAsBullet(Util.getCurrentCursorLine(editText));
@@ -331,7 +299,7 @@ public class ARE_Style_ListBullet extends ARE_ABS_FreeStyle {
 		EditText editText = getEditText();
 		int start = Util.getThisLineStart(editText, line);
 		Editable editable = editText.getText();
-		editable.insert(start, Constants.ZERO_WIDTH_SPACE_STR);
+		addZeroWidthSpaceStrSafe(editable, start);
 		start = Util.getThisLineStart(editText, line);
 		int end = Util.getThisLineEnd(editText, line);
 

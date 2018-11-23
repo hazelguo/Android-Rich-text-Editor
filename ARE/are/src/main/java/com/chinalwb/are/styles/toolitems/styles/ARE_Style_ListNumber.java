@@ -18,6 +18,7 @@ import com.chinalwb.are.styles.ARE_ABS_FreeStyle;
 import com.chinalwb.are.styles.toolitems.IARE_ToolItem_Updater;
 
 import static com.chinalwb.are.Util.addZeroWidthSpaceStrSafe;
+import static com.chinalwb.are.Util.isEmptyListItemSpan;
 
 /**
  * All Rights Reserved.
@@ -357,19 +358,6 @@ public class ARE_Style_ListNumber extends ARE_ABS_FreeStyle {
                }
            }
         }
-    }
-
-    /**
-     * Check if this is an empty span.
-     * For example:
-     *   1. a
-     *   2.
-     *
-     * Line 2 is empty
-     */
-    private boolean isEmptyListItemSpan(CharSequence listItemSpanContent) {
-        int spanLen = listItemSpanContent.length();
-        return spanLen == 2;
     }
 
     private ListNumberSpan makeLineAsList(int num) {

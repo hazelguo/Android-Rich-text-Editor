@@ -15,6 +15,7 @@ import com.chinalwb.are.spans.ListBulletSpan;
 import com.chinalwb.are.spans.ListNumberSpan;
 
 import static com.chinalwb.are.Util.addZeroWidthSpaceStrSafe;
+import static com.chinalwb.are.Util.isEmptyListItemSpan;
 
 /**
  * All Rights Reserved.
@@ -322,29 +323,6 @@ public class ARE_ListNumber extends ARE_ABS_FreeStyle {
 
     private void updateCheckStatus() {
         mListBulletChecked = ButtonCheckStatusUtil.shouldCheckButton(getEditText(), ListNumberSpan.class);
-    }
-
-    /**
-     * Check if this is an empty span.
-     * <p>
-     * <B>OLD COMMENT: and whether it is at the end of the spans list</B>
-     *
-     * @param listItemSpanContent
-     * @return
-     */
-    private boolean isEmptyListItemSpan(CharSequence listItemSpanContent) {
-        int spanLen = listItemSpanContent.length();
-        if (spanLen == 2) {
-            //
-            // This case:
-            // 1. A
-            // 2.
-            //
-            // Line 2 is empty
-            return true;
-        } else {
-            return false;
-        }
     }
 
     private ListNumberSpan makeLineAsList(int num) {

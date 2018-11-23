@@ -407,4 +407,18 @@ public class Util {
             editable.insert(pos, Constants.ZERO_WIDTH_SPACE_STR.toString());
         }
     }
+
+    /**
+     * Check if this is an empty span.
+     * For example:
+     *   1. a
+     *   2.
+     *
+     * Line 2 is empty
+     */
+    public static boolean isEmptyListItemSpan(CharSequence listItemSpanContent) {
+        int spanLen = listItemSpanContent.length();
+        return spanLen == 2;
+    }
+
 }
