@@ -13,7 +13,7 @@ public class ButtonCheckStatusUtil {
             for (int line = selectionLines[0]; line <= selectionLines[1]; ++line) {
                 int lineStart = Util.getThisLineStart(editText, line);
                 int lineEnd = Util.getThisLineEnd(editText, line);
-                int span = editable.nextSpanTransition(lineStart - 1, lineEnd, ListBulletSpan.class);
+                int span = editable.nextSpanTransition(lineStart - 1, lineEnd, type);
                 if (span >= lineEnd) {
                     return false;
                 }
