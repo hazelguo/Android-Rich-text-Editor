@@ -10,7 +10,7 @@ public class MyTypefaceSpan extends MetricAffectingSpan {
     private static Typeface sTypeface;
     
     /**
-     * @param family The font family for this typeface.  Examples include:
+     * @param typeface The font family for this typeface.  Examples include:
      * ???
      */
     public MyTypefaceSpan(Typeface typeface) {

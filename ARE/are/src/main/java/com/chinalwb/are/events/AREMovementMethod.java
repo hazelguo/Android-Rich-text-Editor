@@ -20,29 +20,24 @@ import com.chinalwb.are.styles.ARE_Underline;
 import com.chinalwb.are.styles.ARE_Video;
 
 /**
- * <p>
  * This base MovementMethod is a compound product from {@link android.text.method.ArrowKeyMovementMethod} and {@link android.text.method.LinkMovementMethod}.
  * It supports all behaviours of theirs.
- * </p>
- * <p>
+
  * Before sub-class extends this, you must clearly know 2 points of them:
- * <ul>
- * <li>{@link ArrowKeyMovementMethod}: ArrowKeyMovementMethod does <b>support selection of text</b> but <b>not the clicking of links</b>.</li>
- * <li>{@link LinkMovementMethod}: LinkMovementMethod does <b>support clicking of links</b> but <b>not the selection of text</b>.</li>
- * </ul>
+
+ * {@link ArrowKeyMovementMethod}: ArrowKeyMovementMethod does support selection of text but not the clicking of links.
+ * {@link LinkMovementMethod}: LinkMovementMethod does support clicking of links but not the selection of text.
+
  * In order to fit general and variable requirements, it should support the above 2 behaviors. So this base-class is just to solve it,
- * which compounding <b>"support selection of text"</b> and "<b>support clicking of links"</b> to one class. So in later you just
+ * which compounding "support selection of text" and "support clicking of links" to one class. So in later you just
  * extends this only!
- * </p>
- * <p>
- * <b>In addition, you'd better know this:</b>
- * <pre>
+
+ * In addition, you'd better know this:
+ *
  *     In some Samsung devices(e.g. Samsung GT-N7108, Android 4.3 version), one EditText contains links(can be clicked) and selection(can be selected):
  *     If you just extends {@link LinkMovementMethod}, it'll report some exception and result in a NullPointerException!
  *     So, this solution is pretty perfect to solve it!
  *     e.g. For solving Bug #16456 App crash if click TextView in process ADP page
- * </pre>
- * </p>
  *
  * @author Created by SongHui (@BroadVision) on 2017/7/14.
  */

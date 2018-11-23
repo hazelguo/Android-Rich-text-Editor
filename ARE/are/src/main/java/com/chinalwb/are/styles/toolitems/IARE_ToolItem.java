@@ -16,7 +16,6 @@ public interface IARE_ToolItem {
 
     /**
      * Each tool item is a style, and a style combines with specific span.
-     * @return
      */
     public IARE_Style getStyle();
 
@@ -27,15 +26,11 @@ public interface IARE_ToolItem {
 
     /**
      * Selection changed call back. Update tool item checked status
-     *
-     * @param selStart
-     * @param selEnd
      */
     public void onSelectionChanged(int selStart, int selEnd);
 
     /**
      * Returns the toolbar of this tool item.
-     * @return
      */
     public IARE_Toolbar getToolbar();
 
@@ -46,22 +41,14 @@ public interface IARE_ToolItem {
 
     /**
      * Gets the tool item updater instance, will be called when style being checked and unchecked.
-     * @return
      */
     public IARE_ToolItem_Updater getToolItemUpdater();
 
     /**
      * Sets the tool item updater.
-     * @param toolItemUpdater
      */
     public void setToolItemUpdater(IARE_ToolItem_Updater toolItemUpdater);
 
-    /**
-     *
-     * @param requestCode
-     * @param resultCode
-     * @param data
-     */
     public void onActivityResult(int requestCode, int resultCode, Intent data);
 
 }

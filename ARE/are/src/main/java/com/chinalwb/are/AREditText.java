@@ -316,9 +316,6 @@ public class AREditText extends AppCompatEditText {
 
     /**
      * Sets html content to EditText.
-     *
-     * @param html
-     * @return
      */
     public void fromHtml(String html) {
         Html.sContext = mContext;

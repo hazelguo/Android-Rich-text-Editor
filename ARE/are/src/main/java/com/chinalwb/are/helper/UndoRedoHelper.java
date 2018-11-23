@@ -10,11 +10,9 @@ import android.widget.TextView;
 import java.util.LinkedList;
 
 /**
- * @author dlink
- * @email linxy59@mail2.sysu.edu.cn
- * @date 2018/9/9
- * @discription null
- * @usage
+ * @author dlink linxy59@mail2.sysu.edu.cn
+ *
+ * Usage:
  * private UndoRedoHelper undoRedoHelper;
  * EditText editText = findViewById(R.id.et);
  * this.undoRedoHelper = new UndoRedoHelper(editText);

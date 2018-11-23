@@ -245,9 +245,6 @@ public class AREditor extends RelativeLayout {
 
     /**
      * Sets html content to EditText.
-     *
-     * @param html
-     * @return
      */
     public void fromHtml(String html) {
         Html.sContext = mContext;

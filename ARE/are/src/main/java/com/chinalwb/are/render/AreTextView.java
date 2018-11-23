@@ -17,11 +17,7 @@ import com.chinalwb.are.strategies.defaults.DefaultClickStrategy;
 import java.util.HashMap;
 
 /**
- * @author dlink
- * @email linxy59@mail2.sysu.edu.cn
- * @date 2018/5/20
- * @discription null
- * @usage null
+ * @author dlink linxy59@mail2.sysu.edu.cn
  */
 public class AreTextView extends AppCompatTextView {
 
