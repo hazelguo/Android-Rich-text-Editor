@@ -401,4 +401,10 @@ public class Util {
         drawable.draw(canvas);
         return bitmap;
     }
+
+    public static void addZeroWidthSpaceStrSafe(Editable editable, int pos) {
+        if (editable.charAt(pos) != Constants.ZERO_WIDTH_SPACE_INT) {
+            editable.insert(pos, Constants.ZERO_WIDTH_SPACE_STR.toString());
+        }
+    }
 }

@@ -14,6 +14,8 @@ import com.chinalwb.are.Util;
 import com.chinalwb.are.spans.ListBulletSpan;
 import com.chinalwb.are.spans.ListNumberSpan;
 
+import static com.chinalwb.are.Util.addZeroWidthSpaceStrSafe;
+
 /**
  * All Rights Reserved.
  *
@@ -125,6 +127,14 @@ public class ARE_ListNumber extends ARE_ABS_FreeStyle {
         });
     }
 
+    /**
+     * @param start the start of the in-editing word if the word is not empty (after editing), or
+     *              the cursor position if the word is empty (after editing).
+     *              Look at TextWatcher.afterTextChange.start
+     * @param end the end of the change (after editing). It's either the cursor position, or the
+     *            end of the line if it's a selection change.
+     *            Look at TextWatcher.afterTextChange.end
+     */
     @Override
     public void applyStyle(Editable editable, int start, int end) {
         ListNumberSpan[] listSpans = editable.getSpans(start, end, ListNumberSpan.class);
@@ -132,22 +142,20 @@ public class ARE_ListNumber extends ARE_ABS_FreeStyle {
             return;
         }
 
-        // Check if the in-editing word is empty (after editing)
         if (end > start) {
-            // If it's not empty (after editing), the current editing is either:
+            // The current editing is either:
             //   1) A normal insertion or deletion of chars that doesn't require any special check
             //   2) Or, a NEW_LINE insertion, which requires special checks.
             char c = editable.charAt(end - 1);
             // Only do special checks if the user inputs \n (new line).
             // No need for special checks if the user inputs normal characters.
             if (c == Constants.CHAR_NEW_LINE) {
-                int lastListSpanIndex = listSpans.length - 1;
-                if (lastListSpanIndex > -1) {
-                    ListNumberSpan lastListSpan = listSpans[lastListSpanIndex];
-                    int lastListItemSpanStart = editable.getSpanStart(lastListSpan);
-                    int lastListItemSpanEnd = editable.getSpanEnd(lastListSpan);
-                    CharSequence listItemSpanContent = editable.subSequence(
-                            lastListItemSpanStart, lastListItemSpanEnd);
+                int currListSpanIndex = listSpans.length - 1;
+                if (currListSpanIndex > -1) {
+                    ListNumberSpan currListSpan = listSpans[currListSpanIndex];
+                    int currListSpanStart = editable.getSpanStart(currListSpan);
+                    int currListSpanEnd = editable.getSpanEnd(currListSpan);
+                    CharSequence currSpanContent = editable.subSequence(currListSpanStart, currListSpanEnd);
 
                     // If the last list span is empty
                     // For example:
@@ -171,23 +179,21 @@ public class ARE_ListNumber extends ARE_ABS_FreeStyle {
                     //
                     // We need to: 1) end the span right before the cursor, 2) start a new span at
                     // the cursor, 3) update following ListNumber items
-                    if (isEmptyListItemSpan(listItemSpanContent)) {
-                        editable.removeSpan(lastListSpan);
+                    if (isEmptyListItemSpan(currSpanContent)) {
+                        editable.removeSpan(currListSpan);
                         // Deletes the ZERO_WIDTH_SPACE_STR and \n
-                        editable.delete(lastListItemSpanStart, lastListItemSpanEnd);
+                        editable.delete(currListSpanStart, currListSpanEnd);
                         // Restart the number for any list spans after the removed span.
-                        reNumberBehindListItemSpans(lastListItemSpanStart, editable, 0);
+                        reNumberBehindListItemSpans(currListSpanStart, editable, 0);
                     } else {
-                        if (end > lastListItemSpanStart) {
-                            editable.removeSpan(lastListSpan);
-                            editable.setSpan(lastListSpan,
-                                    lastListItemSpanStart, end - 1,
+                        if (end > currListSpanStart) {
+                            editable.removeSpan(currListSpan);
+                            editable.setSpan(currListSpan,
+                                    currListSpanStart, end - 1,
                                     Spanned.SPAN_INCLUSIVE_INCLUSIVE);
                         }
-                        int lastListItemNumber = lastListSpan.getNumber();
-                        ListNumberSpan newListItemSpan = makeLineAsList(lastListItemNumber + 1);
-                        end = editable.getSpanEnd(newListItemSpan);
-                        reNumberBehindListItemSpans(end, editable, newListItemSpan.getNumber());
+                        makeLineAsList(currListSpan.getNumber() + 1);
+                        reNumberBehindListItemSpans(end, editable, currListSpan.getNumber());
                     }
                 }
             }
@@ -348,7 +354,7 @@ public class ARE_ListNumber extends ARE_ABS_FreeStyle {
         EditText editText = getEditText();
         int start = Util.getThisLineStart(editText, line);
         Editable editable = editText.getText();
-        editable.insert(start, Constants.ZERO_WIDTH_SPACE_STR);
+        addZeroWidthSpaceStrSafe(editable, start);
         start = Util.getThisLineStart(editText, line);
         int end = Util.getThisLineEnd(editText, line);
 
