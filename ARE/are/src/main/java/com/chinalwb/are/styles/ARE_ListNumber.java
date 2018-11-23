@@ -109,20 +109,22 @@ public class ARE_ListNumber extends ARE_ABS_FreeStyle {
                         followingStartNumber = previousListItemSpan.getNumber();
                     }
                     for (int line = selectionLines[0]; line <= selectionLines[1]; ++line) {
-                        followingStartNumber ++;
                         int lineStart = Util.getThisLineStart(editText, line);
                         int lineEnd = Util.getThisLineEnd(editText, line);
                         int nextSpanStart = editable.nextSpanTransition(lineStart - 1, lineEnd, ListNumberSpan.class);
                         if (nextSpanStart >= lineEnd) {
-                            makeLineAsList(line, followingStartNumber);
+                            makeLineAsList(line, 0);
                         }
                     }
                     setChecked(true);
                 }
+                // -- Change the content to trigger the editable redraw
+                editable.insert(start, Constants.ZERO_WIDTH_SPACE_STR);
+                editable.delete(start+ 1, start+ 1);
+                // -- End: Change the content to trigger the editable redraw
+
                 // Reget the end of selection because the text length may change as we add/remove spans
-                reNumberBehindListItemSpans(
-                        Util.getThisLineEnd(editText, selectionLines[1]) + 1,
-                        editable, followingStartNumber);
+                reNumberBehindListItemSpans(start, editable, followingStartNumber);
             }
         });
     }
@@ -369,13 +371,7 @@ public class ARE_ListNumber extends ARE_ABS_FreeStyle {
         return listItemSpan;
     }
 
-    /**
-     * @param end
-     * @param editable
-     * @param thisNumber
-     */
-    public static void reNumberBehindListItemSpans(int end, Editable editable,
-                                                   int thisNumber) {
+    public static void reNumberBehindListItemSpans(int end, Editable editable, int thisNumber) {
         ListNumberSpan[] behindListItemSpans = editable.getSpans(end + 1,
                 end + 2, ListNumberSpan.class);
         if (null != behindListItemSpans && behindListItemSpans.length > 0) {

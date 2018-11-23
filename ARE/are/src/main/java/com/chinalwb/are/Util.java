@@ -403,7 +403,7 @@ public class Util {
     }
 
     public static void addZeroWidthSpaceStrSafe(Editable editable, int pos) {
-        if (editable.charAt(pos) != Constants.ZERO_WIDTH_SPACE_INT) {
+        if (pos >= editable.length() || editable.charAt(pos) != Constants.ZERO_WIDTH_SPACE_INT) {
             editable.insert(pos, Constants.ZERO_WIDTH_SPACE_STR.toString());
         }
     }
