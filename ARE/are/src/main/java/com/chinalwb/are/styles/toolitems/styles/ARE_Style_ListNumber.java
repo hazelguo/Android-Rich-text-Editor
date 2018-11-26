@@ -135,16 +135,16 @@ public class ARE_Style_ListNumber extends ARE_ABS_FreeStyle {
                         if (spans != null && spans.length > 0) {
                             spans[0].setOrder(followingStartNumber);
                         } else {
-                            makeLineAsList(line, followingStartNumber);
+                            makeLineAsList(line, -1, followingStartNumber);
                         }
                     }
                     setChecked(true);
                 }
                 // Reget the end of selection because the text length may change as we add/remove spans
-                reNumberBehindListItemSpans(Util.getThisLineEnd(editText, selectionLines[1]), editable, followingStartNumber);
+                reNumberBehindListItemSpansForLine(editText, selectionLines[1]);
 
                 for (int line = selectionLines[0]; line <= selectionLines[1]; ++line) {
-                    int lineStart = Util.getThisLineStart(mEditText, line);
+                    int lineStart = Util.getThisLineStart(editText, line);
                     // -- Change the content to trigger the editable redraw
                     editable.insert(lineStart, Constants.ZERO_WIDTH_SPACE_STR);
                     editable.delete(lineStart + 1, lineStart + 1);
@@ -211,7 +211,7 @@ public class ARE_Style_ListNumber extends ARE_ABS_FreeStyle {
                         // Deletes the ZERO_WIDTH_SPACE_STR and \n
                         editable.delete(currListSpanStart, currListSpanEnd);
                         // Restart the number for any list spans after the removed span.
-                        reNumberBehindListItemSpans(currListSpanStart, editable, 0);
+                        reNumberBehindListItemSpansForOffset(getEditText(), currListSpanStart);
                     } else {
                         if (end > currListSpanStart) {
                             editable.removeSpan(currListSpan);
@@ -220,7 +220,7 @@ public class ARE_Style_ListNumber extends ARE_ABS_FreeStyle {
                                     Spanned.SPAN_INCLUSIVE_INCLUSIVE);
                         }
                         makeLineAsList(currListSpan);
-                        reNumberBehindListItemSpans(end, editable, currListSpan.getOrder());
+                        reNumberBehindListItemSpansForOffset(getEditText(), end);
                     }
                 }
             }
@@ -254,8 +254,7 @@ public class ARE_Style_ListNumber extends ARE_ABS_FreeStyle {
                 if (editable.length() > spanEnd) {
                     ListNumberSpan[] spansBehind = editable.getSpans(spanEnd, spanEnd + 1, ListNumberSpan.class);
                     if (spansBehind.length > 0) {
-                        int removedNumber = firstSpan.getOrder();
-                        reNumberBehindListItemSpans(spanStart, editable, removedNumber - 1);
+                        reNumberBehindListItemSpansForOffset(getEditText(), spanStart);
                     }
                 }
             } else if (start == spanStart) {
@@ -294,8 +293,7 @@ public class ARE_Style_ListNumber extends ARE_ABS_FreeStyle {
                 // 4. D
                 //
                 // mergeLists();
-                int previousNumber = firstSpan.getOrder();
-                reNumberBehindListItemSpans(end, editable, previousNumber);
+                reNumberBehindListItemSpansForOffset(getEditText(), end);
             }
         }
         updateCheckStatus();
@@ -310,7 +308,7 @@ public class ARE_Style_ListNumber extends ARE_ABS_FreeStyle {
         ListNumberSpan[] targetSpans = editable.getSpans(spanEnd, spanEnd + 1, ListNumberSpan.class);
         // logAllListItems(editable, false);
         if (targetSpans == null || targetSpans.length == 0) {
-            reNumberBehindListItemSpans(spanEnd, editable, listSpan.getOrder());
+            reNumberBehindListItemSpansForOffset(getEditText(), spanEnd);
             return;
         }
         ListNumberSpan firstTargetSpan = targetSpans[0];
@@ -343,17 +341,20 @@ public class ARE_Style_ListNumber extends ARE_ABS_FreeStyle {
         for (ListNumberSpan lns : compositeSpans) {
             editable.removeSpan(lns);
         }
-        editable.setSpan(listSpan, spanStart, spanEnd,
-                    Spanned.SPAN_INCLUSIVE_INCLUSIVE);
-        reNumberBehindListItemSpans(spanEnd, editable, listSpan.getOrder());
+        editable.setSpan(listSpan, spanStart, spanEnd, Spanned.SPAN_INCLUSIVE_INCLUSIVE);
+        reNumberBehindListItemSpansForOffset(getEditText(), spanEnd);
     }
 
     private ListNumberSpan makeLineAsList(ListNumberSpan prevSpan) {
         EditText editText = getEditText();
-        return makeLineAsList(Util.getCurrentCursorLine(editText), prevSpan.getOrder() + 1);
+        return makeLineAsList(Util.getCurrentCursorLine(editText), prevSpan.getDepth(), prevSpan.getOrder() + 1);
     }
 
-    private ListNumberSpan makeLineAsList(int line, int num) {
+    /**
+     * @param depth the depth of the new line. If depth is -1, the actual depth will be either
+     *              the current depth if a ListSpan exists, or 1 if no ListSpan exists
+     */
+    private ListNumberSpan makeLineAsList(int line, int depth, int num) {
         EditText editText = getEditText();
         Editable editable = editText.getText();
         int start = Util.getThisLineStart(editText, line);
@@ -365,17 +366,21 @@ public class ARE_Style_ListNumber extends ARE_ABS_FreeStyle {
             end--;
         }
 
-        AreListSpan[] currSpans = editable.getSpans(start, end, AreListSpan.class);
-        ListNumberSpan listItemSpan = new ListNumberSpan(
-                currSpans == null || currSpans.length == 0 ? 1 : currSpans[0].getDepth(), num);
+        final ListNumberSpan listItemSpan;
+        if (depth >= AreListSpan.MIN_DEPTH) {
+            listItemSpan = new ListNumberSpan(depth, num);
+        } else {
+            AreListSpan[] currSpans = editable.getSpans(start, end, AreListSpan.class);
+            listItemSpan = new ListNumberSpan(
+                    currSpans == null || currSpans.length == 0 ? 1 : currSpans[0].getDepth(), num);
+        }
         editable.setSpan(listItemSpan, start, end, Spannable.SPAN_INCLUSIVE_INCLUSIVE);
 
         return listItemSpan;
     }
 
-
     public static void reNumberInsideListItemSpans(EditText editText, int startLine, int endLine) {
-        List<Integer> depthToOrder = getDepthToOrderList(editText, startLine);
+        List<Integer> depthToOrder = getDepthToOrderList(editText, startLine - 1);
         Editable editable = editText.getText();
 
         for (int line = startLine; line <= endLine; ++line) {
@@ -410,16 +415,16 @@ public class ARE_Style_ListNumber extends ARE_ABS_FreeStyle {
      *   The actual implementation is in a reversed way: iterate the depth, and look for the last
      *   line that can affect the order of this depth.
      *
-     *   @param line the end (exclusive) of the calculation
+     *   @param line the end (inclusive) of the calculation
      */
     private static List<Integer> getDepthToOrderList(EditText editText, int line) {
         Editable editable = editText.getText();
         List<Integer> depthToOrder = new ArrayList<>(AreListSpan.MAX_DEPTH + 1);
         for (int i = 0; i <= AreListSpan.MAX_DEPTH; ++i) {
-            depthToOrder.add(0);
+            depthToOrder.add(1);
         }
 
-        int lastNoListSpanLine = line - 1;
+        int lastNoListSpanLine = line;
         for (; lastNoListSpanLine > -1; lastNoListSpanLine--) {
             int lineStart = Util.getThisLineStart(editText, lastNoListSpanLine);
             int lineEnd = Util.getThisLineEnd(editText, lastNoListSpanLine);
@@ -429,7 +434,7 @@ public class ARE_Style_ListNumber extends ARE_ABS_FreeStyle {
             }
         }
 
-        for (int l = lastNoListSpanLine + 1; l < line; ++l) {
+        for (int l = lastNoListSpanLine + 1; l <= line; ++l) {
             AreListSpan[] listSpans = Util.getListSpanForLine(editText, editable, l);
             updateDepthToOrderFromSpan(listSpans[0], depthToOrder);
         }
@@ -449,12 +454,13 @@ public class ARE_Style_ListNumber extends ARE_ABS_FreeStyle {
     }
 
     /**
-     * @param line the line number (inclusive) of the update
+     * @param line the line number right before the pending update block. Thus, `line` doesn't need
+     *             to be updated.
      */
-    public static void reNumberBehindListItemSpans(EditText editText, int line) {
+    public static void reNumberBehindListItemSpansForLine(EditText editText, int line) {
         Editable editable = editText.getText();
         List<Integer> depthToOrder = getDepthToOrderList(editText, line);
-        for (int l = line; ; l++) {
+        for (int l = line + 1; ; l++) {
             int lineStart = Util.getThisLineStart(editText, l);
             AreListSpan[] spans = editable.getSpans(lineStart, lineStart + 1, AreListSpan.class);
             if (spans == null || spans.length == 0) {
@@ -469,22 +475,12 @@ public class ARE_Style_ListNumber extends ARE_ABS_FreeStyle {
         }
     }
 
-    public static void reNumberBehindListItemSpans(int end, Editable editable, int thisNumber) {
-        ListNumberSpan[] behindListItemSpans = editable.getSpans(end + 1,
-                end + 2, ListNumberSpan.class);
-        if (null != behindListItemSpans && behindListItemSpans.length > 0) {
-            int total = behindListItemSpans.length;
-            int index = 0;
-            for (ListNumberSpan listItemSpan : behindListItemSpans) {
-                int newNumber = ++thisNumber;
-                listItemSpan.setOrder(newNumber);
-                ++index;
-                if (total == index) {
-                    int newSpanEnd = editable.getSpanEnd(listItemSpan);
-                    reNumberBehindListItemSpans(newSpanEnd, editable, newNumber);
-                }
-            }
-        }
+    /**
+     * @param offset the offset right before the pending update block. Thus, `offset` shouldn't be
+     *               updated
+     */
+    public static void reNumberBehindListItemSpansForOffset(EditText editText, int offset) {
+        reNumberBehindListItemSpansForLine(editText, Util.getLineForOffset(editText, offset));
     }
 
     private void updateCheckStatus() {

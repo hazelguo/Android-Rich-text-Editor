@@ -74,6 +74,19 @@ public class Util {
         return -1;
     }
 
+    public static int getLineForOffset(EditText editText, int offset) {
+        Layout layout = editText.getLayout();
+
+        if (null == layout) {
+            return -1;
+        }
+        if (offset != -1) {
+            return layout.getLineForOffset(offset);
+        }
+
+        return -1;
+    }
+
     /**
      * Returns the selected area line numbers.
      *

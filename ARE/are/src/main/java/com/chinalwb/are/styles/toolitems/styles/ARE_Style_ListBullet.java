@@ -87,7 +87,7 @@ public class ARE_Style_ListBullet extends ARE_ABS_FreeStyle {
 					ListNumberSpan lastListNumberSpan = listNumberSpans[len - 1];
 					int lastListNumberSpanEnd = editable.getSpanEnd(lastListNumberSpan);
 
-					ARE_ListNumber.reNumberBehindListItemSpans(lastListNumberSpanEnd + 1, editable, 0);
+					ARE_Style_ListNumber.reNumberBehindListItemSpansForOffset(editText, lastListNumberSpanEnd);
 
 					// - Remove all ListNumberSpan
 					for (ListNumberSpan listNumberSpan : listNumberSpans) {
@@ -116,7 +116,7 @@ public class ARE_Style_ListBullet extends ARE_ABS_FreeStyle {
 						int lineEnd = Util.getThisLineEnd(editText, line);
 						int nextSpanStart = editable.nextSpanTransition(lineStart - 1, lineEnd, ListBulletSpan.class);
 						if (nextSpanStart >= lineEnd) {
-							makeLineAsBullet(line);
+							makeLineAsBullet(line, -1);
 						}
 					}
 					updateCheckStatus(true);
@@ -201,7 +201,7 @@ public class ARE_Style_ListBullet extends ARE_ABS_FreeStyle {
 									currListSpanStart, end - 1,
 									Spanned.SPAN_INCLUSIVE_INCLUSIVE);
 						}
-						makeLineAsBullet();
+						makeLineAsBullet(currListSpan.getDepth());
 					}
 				} // #End of if it is in ListItemSpans..
 			} // #End of user types \n
@@ -294,12 +294,16 @@ public class ARE_Style_ListBullet extends ARE_ABS_FreeStyle {
 		// AREditTextUtil.log("merge span start == " + spanStart + " end == " + spanEnd);
 	}
 
-	private void makeLineAsBullet() {
+	private void makeLineAsBullet(int depth) {
 		EditText editText = getEditText();
-		makeLineAsBullet(Util.getCurrentCursorLine(editText));
+		makeLineAsBullet(Util.getCurrentCursorLine(editText), depth);
 	}
 
-	private void makeLineAsBullet(int line) {
+	/**
+	 * @param depth the depth of the new line. If depth is -1, the actual depth will be either
+	 *              the current depth if a ListSpan exists, or 1 if no ListSpan exists
+	 */
+	private void makeLineAsBullet(int line, int depth) {
 		EditText editText = getEditText();
 		Editable editable = editText.getText();
 		int start = Util.getThisLineStart(editText, line);
@@ -314,11 +318,15 @@ public class ARE_Style_ListBullet extends ARE_ABS_FreeStyle {
 			end--;
 		}
 
-		AreListSpan[] currSpans = editable.getSpans(start, end, AreListSpan.class);
-		ListBulletSpan BulletListItemSpan = new ListBulletSpan(
-				currSpans == null || currSpans.length == 0 ? 1 : currSpans[0].getDepth(), 0);
-		editable.setSpan(BulletListItemSpan, start, end,
-				Spannable.SPAN_INCLUSIVE_INCLUSIVE);
+		final ListBulletSpan listItemSpan;
+		if (depth >= AreListSpan.MIN_DEPTH) {
+			listItemSpan = new ListBulletSpan(depth, 0);
+		} else {
+			AreListSpan[] currSpans = editable.getSpans(start, end, AreListSpan.class);
+			listItemSpan = new ListBulletSpan(
+					currSpans == null || currSpans.length == 0 ? 1 : currSpans[0].getDepth(), 0);
+		}
+		editable.setSpan(listItemSpan, start, end, Spannable.SPAN_INCLUSIVE_INCLUSIVE);
 	}
 
 	@Override

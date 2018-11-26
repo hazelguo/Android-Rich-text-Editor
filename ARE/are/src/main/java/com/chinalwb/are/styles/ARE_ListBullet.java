@@ -14,6 +14,7 @@ import com.chinalwb.are.Util;
 import com.chinalwb.are.spans.AreListSpan;
 import com.chinalwb.are.spans.ListBulletSpan;
 import com.chinalwb.are.spans.ListNumberSpan;
+import com.chinalwb.are.styles.toolitems.styles.ARE_Style_ListNumber;
 
 import static com.chinalwb.are.Util.addZeroWidthSpaceStrSafe;
 import static com.chinalwb.are.Util.isEmptyListItemSpan;
@@ -77,7 +78,7 @@ public class ARE_ListBullet extends ARE_ABS_FreeStyle {
 					editable.delete(lastListNumberSpanEnd + 1, lastListNumberSpanEnd + 1);
 					// -- End: Change the content to trigger the editable redraw
 
-					ARE_ListNumber.reNumberBehindListItemSpans(lastListNumberSpanEnd + 1, editable, 0);
+					ARE_Style_ListNumber.reNumberBehindListItemSpansForOffset(editText, lastListNumberSpanEnd);
 
 					// - Remove all ListNumberSpan
 					for (ListNumberSpan listNumberSpan : listNumberSpans) {

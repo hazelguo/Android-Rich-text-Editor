@@ -49,7 +49,7 @@ public abstract class ARE_Style_Indent extends ARE_ABS_FreeStyle {
                 }
 
                 ARE_Style_ListNumber.reNumberInsideListItemSpans(mEditText, selectionLines[0], selectionLines[1]);
-                ARE_Style_ListNumber.reNumberBehindListItemSpans(mEditText, selectionLines[1] + 1);
+                ARE_Style_ListNumber.reNumberBehindListItemSpansForLine(mEditText, selectionLines[1]);
 
                 for (int line = selectionLines[0]; line <= selectionLines[1]; ++line) {
                     int lineStart = Util.getThisLineStart(mEditText, line);
