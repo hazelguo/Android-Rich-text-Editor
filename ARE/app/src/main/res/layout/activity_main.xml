@@ -15,7 +15,6 @@
         android:gravity="center"
         android:textSize="50sp"
         android:text="Your ListView may go here"
-
         android:visibility="gone"
         />
 
@@ -48,7 +47,10 @@
             android:layout_height="match_parent"
             android:gravity="top|left"
             android:hint="Your EditText goes here"
-            android:textSize="50sp" />
+            android:inputType="text|textMultiLine"
+            android:padding="8dp"
+            android:textSize="18sp"
+            />
     </ScrollView>
 
     <LinearLayout

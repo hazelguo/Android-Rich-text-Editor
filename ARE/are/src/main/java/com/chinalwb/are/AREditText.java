@@ -84,15 +84,7 @@ public class AREditText extends AppCompatEditText {
 	}
 
 	private void init() {
-		// this.setMovementMethod(new AREMovementMethod());
 		this.setFocusableInTouchMode(true);
-		this.setBackgroundColor(Color.WHITE);
-		this.setInputType(EditorInfo.TYPE_CLASS_TEXT | EditorInfo.TYPE_TEXT_FLAG_MULTI_LINE
-				| EditorInfo.TYPE_TEXT_FLAG_NO_SUGGESTIONS);
-		int padding = 8;
-		padding = Util.getPixelByDp(mContext, padding);
-		this.setPadding(padding, padding, padding, padding);
-		this.setTextSize(TypedValue.COMPLEX_UNIT_SP, Constants.DEFAULT_FONT_SIZE);
 	}
 
 	/**
