@@ -28,6 +28,8 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.chinalwb.are.spans.AreListSpan;
+
 import java.util.Arrays;
 import java.util.Collections;
 
@@ -419,6 +421,16 @@ public class Util {
     public static boolean isEmptyListItemSpan(CharSequence listItemSpanContent) {
         int spanLen = listItemSpanContent.length();
         return spanLen == 2;
+    }
+
+    public static AreListSpan[] getListSpanForLine(EditText editText, Editable editable, int line) {
+        int lineStart = Util.getThisLineStart(editText, line);
+        int lineEnd = Util.getThisLineEnd(editText, line);
+        return editable.getSpans(lineStart, lineEnd, AreListSpan.class);
+    }
+
+    public static AreListSpan[] getListSpanForLine(EditText editText, int line) {
+        return getListSpanForLine(editText, editText.getText(), line);
     }
 
 }

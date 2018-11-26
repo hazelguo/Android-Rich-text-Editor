@@ -17,23 +17,6 @@
 package com.chinalwb.are.android.inner;
 
 //import com.android.internal.util.ArrayUtils;
-import java.io.IOException;
-import java.io.StringReader;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Stack;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import org.ccil.cowan.tagsoup.HTMLSchema;
-import org.ccil.cowan.tagsoup.Parser;
-import org.w3c.dom.Text;
-import org.xml.sax.Attributes;
-import org.xml.sax.ContentHandler;
-import org.xml.sax.InputSource;
-import org.xml.sax.Locator;
-import org.xml.sax.SAXException;
-import org.xml.sax.XMLReader;
 
 import android.content.Context;
 import android.content.res.Resources;
@@ -44,7 +27,6 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
-import android.media.MediaMetadataRetriever;
 import android.media.ThumbnailUtils;
 import android.net.Uri;
 import android.provider.MediaStore;
@@ -88,6 +70,23 @@ import com.chinalwb.are.spans.AreVideoSpan;
 import com.chinalwb.are.spans.EmojiSpan;
 import com.chinalwb.are.spans.ListBulletSpan;
 import com.chinalwb.are.spans.ListNumberSpan;
+
+import org.ccil.cowan.tagsoup.HTMLSchema;
+import org.ccil.cowan.tagsoup.Parser;
+import org.xml.sax.Attributes;
+import org.xml.sax.ContentHandler;
+import org.xml.sax.InputSource;
+import org.xml.sax.Locator;
+import org.xml.sax.SAXException;
+import org.xml.sax.XMLReader;
+
+import java.io.IOException;
+import java.io.StringReader;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Stack;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static com.chinalwb.are.android.inner.Html.sContext;
 
@@ -1126,8 +1125,7 @@ class HtmlToSpannedConverter implements ContentHandler {
     }
 
     private void startOL(Editable text) {
-        int level = OL_UL_STACK.size();
-        OL ol = new OL(level);
+        OL ol = new OL();
         start(text, ol);
         OL_UL_STACK.push(ol);
         Html.sListNumber = 0;
@@ -1145,8 +1143,7 @@ class HtmlToSpannedConverter implements ContentHandler {
     }
 
     private void startUL(Editable text) {
-        int level = OL_UL_STACK.size();
-        UL ul = new UL(level);
+        UL ul = new UL();
         start(text, ul);
         OL_UL_STACK.push(ul);
     }
@@ -1175,12 +1172,12 @@ class HtmlToSpannedConverter implements ContentHandler {
     private static void endLi(Editable text) {
         endCssStyle(text);
         endBlockElement(text);
-        Object peekEle = OL_UL_STACK.peek();
+        LI peekEle = OL_UL_STACK.peek();
+        ++peekEle.level;
         if (peekEle instanceof OL) {
-            Html.sListNumber = Html.sListNumber + 1;
-            end(text, Numeric.class, new ListNumberSpan(Html.sListNumber));
+            end(text, Numeric.class, new ListNumberSpan(OL_UL_STACK.size(), peekEle.level));
         } else {
-            end(text, Bullet.class, new ListBulletSpan());
+            end(text, Bullet.class, new ListBulletSpan(OL_UL_STACK.size(), peekEle.level));
         }
     }
 
@@ -1623,23 +1620,26 @@ class HtmlToSpannedConverter implements ContentHandler {
         }
     }
 
-    private static class OL {
+    private static class LI {
         private int level;
 
-        public OL(int level) {
-            this.level = level;
+        public LI() {
         }
     }
 
-    private static class UL {
-        private int level;
-
-        public UL(int level) {
-            this.level = level;
+    private static class OL extends LI {
+        public OL() {
+            super();
         }
     }
 
-    private static Stack OL_UL_STACK = new Stack();
+    private static class UL extends LI {
+        public UL() {
+            super();
+        }
+    }
+
+    private static Stack<LI> OL_UL_STACK = new Stack();
 
     
     private static HashMap<String, Integer> COLORS = buildColorMap();

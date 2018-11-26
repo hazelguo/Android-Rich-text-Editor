@@ -4,7 +4,7 @@ import android.graphics.Paint;
 import android.text.Layout;
 import android.text.Spanned;
 
-public class ListNumberSpan implements AreListSpan {
+public class ListNumberSpan extends AreListSpan {
   protected static final int LEADING_MARGIN = 30;
 
   private int mNumber;
@@ -15,12 +15,9 @@ public class ListNumberSpan implements AreListSpan {
   //Gap should be about 1em
   public static final int STANDARD_GAP_WIDTH = 30;
 
-  public ListNumberSpan() {
-      mNumber = -1;
-  }
-
-  public ListNumberSpan(int number) {
-      mNumber = number;
+  public ListNumberSpan(int depth, int order) {
+      super(depth, order, ListType.OL);
+      mNumber = order;
   }
   
   public void setNumber(int number) {

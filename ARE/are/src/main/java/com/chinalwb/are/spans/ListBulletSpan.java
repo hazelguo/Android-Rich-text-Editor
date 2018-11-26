@@ -2,24 +2,25 @@ package com.chinalwb.are.spans;
 
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import android.graphics.Path;
+import android.graphics.Rect;
 import android.text.Layout;
 import android.text.Spanned;
 
-public class ListBulletSpan implements AreListSpan {
+public class ListBulletSpan extends AreListSpan {
+	private static final int BULLET_RADIUS;
+	private static final int X_OFFSET;
 
-	public ListBulletSpan() {
-		//
-		// Default constructor
-		// Do nothing
+	private static Path sBulletPath = null;
+	private float mYOffset = -1;
+
+	static {
+		BULLET_RADIUS = 4;
+		X_OFFSET = CONTENT_SPACING + BULLET_RADIUS;
 	}
 
-	protected static final int LEADING_MARGIN = 30;
-
-	// Gap should be about 1em
-	public static final int STANDARD_GAP_WIDTH = 30;
-
-	public int getLeadingMargin(boolean first) {
-		return LEADING_MARGIN + 50;
+	public ListBulletSpan(int depth, int order) {
+		super(depth, order, ListType.UL);
 	}
 
 	@Override
@@ -28,13 +29,27 @@ public class ListBulletSpan implements AreListSpan {
 			boolean first, Layout l) {
 
 		if (((Spanned) text).getSpanStart(this) == start) {
-			Paint.Style style = p.getStyle();
-			p.setStyle(Paint.Style.FILL);
+			if (mYOffset == -1) {
+				Rect rect = new Rect();
+				p.getTextBounds("A", 0, 1, rect);
+				mYOffset = rect.height() / 2.0f;
+			}
 
-			c.drawText("\u2022", x + dir + LEADING_MARGIN, baseline, p);
+			int position = getIndent() - (x + (dir * X_OFFSET));
+			if (c.isHardwareAccelerated()) {
+				if (sBulletPath == null) {
+					sBulletPath = new Path();
+					// Bullet is slightly better to avoid aliasing artifacts on mdpi devices.
+					sBulletPath.addCircle(0.0f, 0.0f, BULLET_RADIUS, Path.Direction.CW);
+				}
 
-			p.setStyle(style);
+				c.save();
+				c.translate(position, baseline - mYOffset);
+				c.drawPath(sBulletPath, p);
+				c.restore();
+			} else {
+				c.drawCircle(position, baseline - mYOffset, BULLET_RADIUS, p);
+			}
 		}
 	}
-
 }

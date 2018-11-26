@@ -342,7 +342,7 @@ public class ARE_ListNumber extends ARE_ABS_FreeStyle {
             end--;
         }
 
-        ListNumberSpan listItemSpan = new ListNumberSpan(num);
+        ListNumberSpan listItemSpan = new ListNumberSpan(0, num);
         editable.setSpan(listItemSpan, start, end,
                 Spannable.SPAN_INCLUSIVE_INCLUSIVE);
 

@@ -12,10 +12,14 @@ import com.chinalwb.are.AREditText;
 import com.chinalwb.are.ButtonCheckStatusUtil;
 import com.chinalwb.are.Constants;
 import com.chinalwb.are.Util;
+import com.chinalwb.are.spans.AreListSpan;
 import com.chinalwb.are.spans.ListBulletSpan;
 import com.chinalwb.are.spans.ListNumberSpan;
 import com.chinalwb.are.styles.ARE_ABS_FreeStyle;
 import com.chinalwb.are.styles.toolitems.IARE_ToolItem_Updater;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static com.chinalwb.are.Util.addZeroWidthSpaceStrSafe;
 import static com.chinalwb.are.Util.isEmptyListItemSpan;
@@ -356,10 +360,106 @@ public class ARE_Style_ListNumber extends ARE_ABS_FreeStyle {
             end--;
         }
 
-        ListNumberSpan listItemSpan = new ListNumberSpan(num);
+        ListNumberSpan listItemSpan = new ListNumberSpan(0, num);
         editable.setSpan(listItemSpan, start, end, Spannable.SPAN_INCLUSIVE_INCLUSIVE);
 
         return listItemSpan;
+    }
+
+
+    public static void reNumberInsideListItemSpans(EditText editText, int startLine, int endLine) {
+        List<Integer> depthToOrder = getDepthToOrderList(editText, startLine);
+        Editable editable = editText.getText();
+
+        for (int line = startLine; line <= endLine; ++line) {
+            AreListSpan[] listSpans = Util.getListSpanForLine(editText, editable, line);
+            if (listSpans[0] instanceof ListNumberSpan) {
+                ListNumberSpan span = (ListNumberSpan) listSpans[0];
+                span.setOrder(depthToOrder.get(span.getDepth()));
+            }
+            updateDepthToOrderFromSpan(listSpans[0], depthToOrder);
+        }
+    }
+
+    /**
+     * DepthToOrder[d]: for lines after `line`, if the depth is d, the order is DepthToOrder[d].
+     *
+     * How to get DepthToOrder:
+     *   Iterate from the startLine to the very first line to find the last no list span line.
+     *
+     *   Iterate from the last no list span line to the startLine. Say the current line's list span
+     *   has depth d' and order o'. If:
+     *     1. the current line is a list bullet span:
+     *       a. any following list number span that has a larger depth should have order 1
+     *       b. any following list number span that has the same depth should have order 1
+     *       c. any following list number span that has a smaller depth should not be affected.
+     *     2. the current line is a list bullet span:
+     *       a. any following list number span that has a larger depth should have order 1
+     *       b. any following list number span that has the same depth should have order o' + 1
+     *       c. any following list number span that has a smaller depth should not be affected.
+     *
+     *   Update DepthToOrder as processing lines.
+     *
+     *   The actual implementation is in a reversed way: iterate the depth, and look for the last
+     *   line that can affect the order of this depth.
+     *
+     *   @param line the end (exclusive) of the calculation
+     */
+    private static List<Integer> getDepthToOrderList(EditText editText, int line) {
+        Editable editable = editText.getText();
+        List<Integer> depthToOrder = new ArrayList<>(AreListSpan.MAX_DEPTH + 1);
+        for (int i = 0; i <= AreListSpan.MAX_DEPTH; ++i) {
+            depthToOrder.add(0);
+        }
+
+        int lastNoListSpanLine = line - 1;
+        for (; lastNoListSpanLine > -1; lastNoListSpanLine--) {
+            int lineStart = Util.getThisLineStart(editText, lastNoListSpanLine);
+            int lineEnd = Util.getThisLineEnd(editText, lastNoListSpanLine);
+            int nextSpanStart = editable.nextSpanTransition(lineStart - 1, lineEnd, AreListSpan.class);
+            if (nextSpanStart >= lineEnd) {
+                break;
+            }
+        }
+
+        for (int l = lastNoListSpanLine + 1; l < line; ++l) {
+            AreListSpan[] listSpans = Util.getListSpanForLine(editText, editable, l);
+            updateDepthToOrderFromSpan(listSpans[0], depthToOrder);
+        }
+
+        return depthToOrder;
+    }
+
+    private static void updateDepthToOrderFromSpan(AreListSpan span, List<Integer> depthToOrder) {
+        int startDepth = span.getDepth();
+        if (span instanceof ListNumberSpan) {
+            depthToOrder.set(startDepth, span.getOrder() + 1);
+            startDepth++;
+        }
+        for (int i = startDepth; i <= AreListSpan.MAX_DEPTH; ++i) {
+            depthToOrder.set(i, 1);
+        }
+    }
+
+    /**
+     * @param line the line number (inclusive) of the update
+     */
+    public static void reNumberBehindListItemSpans(EditText editText, int line) {
+        Editable editable = editText.getText();
+        List<Integer> depthToOrder = getDepthToOrderList(editText, line);
+        for (int l = line; ; l++) {
+            int lineStart = Util.getThisLineStart(editText, line);
+            AreListSpan[] spans = editable.getSpans(lineStart, lineStart + 1, AreListSpan.class);
+            if (spans == null || spans.length == 0) {
+                break;
+            }
+
+            if (spans[0] instanceof ListNumberSpan) {
+                ListNumberSpan span = (ListNumberSpan) spans[0];
+                span.setOrder(depthToOrder.get(span.getDepth()));
+            }
+            updateDepthToOrderFromSpan(spans[0], depthToOrder);
+        }
     }
 
     public static void reNumberBehindListItemSpans(int end, Editable editable, int thisNumber) {
