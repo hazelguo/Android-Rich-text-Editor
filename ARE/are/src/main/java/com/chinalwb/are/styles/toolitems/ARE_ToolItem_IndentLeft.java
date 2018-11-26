@@ -8,9 +8,8 @@ import android.widget.LinearLayout;
 import com.chinalwb.are.AREditText;
 import com.chinalwb.are.R;
 import com.chinalwb.are.Util;
-import com.chinalwb.are.styles.ARE_Bold;
 import com.chinalwb.are.styles.IARE_Style;
-import com.chinalwb.are.styles.toolitems.styles.ARE_Style_Bold;
+import com.chinalwb.are.styles.toolitems.styles.ARE_Style_IndentLeft;
 
 /**
  * Created by hazel G. on 26/11/2018.
@@ -27,9 +26,7 @@ public class ARE_ToolItem_IndentLeft extends ARE_ToolItem_Abstract {
     public IARE_Style getStyle() {
         if (mStyle == null) {
             AREditText editText = this.getEditText();
-            IARE_ToolItem_Updater toolItemUpdater = getToolItemUpdater();
-            // This is temporary (to avoid crash)
-            mStyle = new ARE_Style_Bold(editText, (ImageView) mToolItemView, toolItemUpdater);
+            mStyle = new ARE_Style_IndentLeft(editText, (ImageView) mToolItemView);
         }
         return mStyle;
     }
