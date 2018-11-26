@@ -8,7 +8,6 @@ import android.widget.LinearLayout;
 import com.chinalwb.are.AREditText;
 import com.chinalwb.are.R;
 import com.chinalwb.are.Util;
-import com.chinalwb.are.styles.ARE_Bold;
 import com.chinalwb.are.styles.IARE_Style;
 import com.chinalwb.are.styles.toolitems.styles.ARE_Style_Bold;
 
@@ -16,7 +15,7 @@ import com.chinalwb.are.styles.toolitems.styles.ARE_Style_Bold;
  * Created by hazel G. on 26/11/2018.
  */
 
-public class ARE_ToolItem_IndentLeft extends ARE_ToolItem_Abstract {
+public class ARE_ToolItem_IndentRight extends ARE_ToolItem_Abstract {
 
     @Override
     public IARE_ToolItem_Updater getToolItemUpdater() {
@@ -44,7 +43,7 @@ public class ARE_ToolItem_IndentLeft extends ARE_ToolItem_Abstract {
             int size = Util.getPixelByDp(context, 40);
             LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(size, size);
             imageView.setLayoutParams(params);
-            imageView.setImageResource(R.drawable.indentleft);
+            imageView.setImageResource(R.drawable.indentright);
             imageView.bringToFront();
             imageView.setVisibility(View.GONE);
             mToolItemView = imageView;
