@@ -37,7 +37,7 @@ public class ARE_Style_IndentRight extends ARE_ABS_FreeStyle {
             @Override
             public void onClick(View v) {
                 Editable editable = mEditText.getText();
-                int [] selectionLines = Util.getCurrentSelectionLines(mEditText);
+                int[] selectionLines = Util.getCurrentSelectionLines(mEditText);
 
                 for (int line = selectionLines[0]; line <= selectionLines[1]; ++line) {
                     AreListSpan[] spans = Util.getListSpanForLine(mEditText, editable, line);
@@ -46,15 +46,16 @@ public class ARE_Style_IndentRight extends ARE_ABS_FreeStyle {
                     }
                 }
 
-                int lastLineEnd = Util.getThisLineEnd(mEditText, selectionLines[1]);
-                // -- Change the content to trigger the editable redraw
-                editable.insert(lastLineEnd, Constants.ZERO_WIDTH_SPACE_STR);
-                editable.delete(lastLineEnd + 1, lastLineEnd + 1);
-                // -- End: Change the content to trigger the editable redraw
-
                 ARE_Style_ListNumber.reNumberInsideListItemSpans(mEditText, selectionLines[0], selectionLines[1]);
                 ARE_Style_ListNumber.reNumberBehindListItemSpans(mEditText, selectionLines[1] + 1);
 
+                for (int line = selectionLines[0]; line <= selectionLines[1]; ++line) {
+                    int lineStart = Util.getThisLineStart(mEditText, line);
+                    // -- Change the content to trigger the editable redraw
+                    editable.insert(lineStart, Constants.ZERO_WIDTH_SPACE_STR);
+                    editable.delete(lineStart + 1, lineStart + 1);
+                    // -- End: Change the content to trigger the editable redraw
+                }
             }
         });
     }

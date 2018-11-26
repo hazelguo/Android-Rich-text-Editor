@@ -127,22 +127,29 @@ public class ARE_Style_ListNumber extends ARE_ABS_FreeStyle {
                         followingStartNumber = previousListItemSpan.getNumber();
                     }
                     for (int line = selectionLines[0]; line <= selectionLines[1]; ++line) {
+                        followingStartNumber ++;
+
                         int lineStart = Util.getThisLineStart(editText, line);
                         int lineEnd = Util.getThisLineEnd(editText, line);
-                        int nextSpanStart = editable.nextSpanTransition(lineStart - 1, lineEnd, ListNumberSpan.class);
-                        if (nextSpanStart >= lineEnd) {
-                            makeLineAsList(line, 0);
+                        ListNumberSpan[] spans = editable.getSpans(lineStart, lineEnd, ListNumberSpan.class);
+                        if (spans != null && spans.length > 0) {
+                            spans[0].setOrder(followingStartNumber);
+                        } else {
+                            makeLineAsList(line, followingStartNumber);
                         }
                     }
                     setChecked(true);
                 }
-                // -- Change the content to trigger the editable redraw
-                editable.insert(start, Constants.ZERO_WIDTH_SPACE_STR);
-                editable.delete(start+ 1, start+ 1);
-                // -- End: Change the content to trigger the editable redraw
-
                 // Reget the end of selection because the text length may change as we add/remove spans
-                reNumberBehindListItemSpans(start, editable, followingStartNumber);
+                reNumberBehindListItemSpans(Util.getThisLineEnd(editText, selectionLines[1]), editable, followingStartNumber);
+
+                for (int line = selectionLines[0]; line <= selectionLines[1]; ++line) {
+                    int lineStart = Util.getThisLineStart(mEditText, line);
+                    // -- Change the content to trigger the editable redraw
+                    editable.insert(lineStart, Constants.ZERO_WIDTH_SPACE_STR);
+                    editable.delete(lineStart + 1, lineStart + 1);
+                    // -- End: Change the content to trigger the editable redraw
+                }
             }
         });
     }
@@ -448,7 +455,7 @@ public class ARE_Style_ListNumber extends ARE_ABS_FreeStyle {
         Editable editable = editText.getText();
         List<Integer> depthToOrder = getDepthToOrderList(editText, line);
         for (int l = line; ; l++) {
-            int lineStart = Util.getThisLineStart(editText, line);
+            int lineStart = Util.getThisLineStart(editText, l);
             AreListSpan[] spans = editable.getSpans(lineStart, lineStart + 1, AreListSpan.class);
             if (spans == null || spans.length == 0) {
                 break;

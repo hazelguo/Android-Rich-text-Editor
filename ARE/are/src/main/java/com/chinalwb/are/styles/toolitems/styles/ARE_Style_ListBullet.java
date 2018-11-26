@@ -87,11 +87,6 @@ public class ARE_Style_ListBullet extends ARE_ABS_FreeStyle {
 					ListNumberSpan lastListNumberSpan = listNumberSpans[len - 1];
 					int lastListNumberSpanEnd = editable.getSpanEnd(lastListNumberSpan);
 
-					// -- Change the content to trigger the editable redraw
-					editable.insert(lastListNumberSpanEnd, Constants.ZERO_WIDTH_SPACE_STR);
-					editable.delete(lastListNumberSpanEnd + 1, lastListNumberSpanEnd + 1);
-					// -- End: Change the content to trigger the editable redraw
-
 					ARE_ListNumber.reNumberBehindListItemSpans(lastListNumberSpanEnd + 1, editable, 0);
 
 					// - Remove all ListNumberSpan
@@ -125,6 +120,14 @@ public class ARE_Style_ListBullet extends ARE_ABS_FreeStyle {
 						}
 					}
 					updateCheckStatus(true);
+				}
+
+				for (int line = selectionLines[0]; line <= selectionLines[1]; ++line) {
+					int lineStart = Util.getThisLineStart(mEditText, line);
+					// -- Change the content to trigger the editable redraw
+					editable.insert(lineStart, Constants.ZERO_WIDTH_SPACE_STR);
+					editable.delete(lineStart + 1, lineStart + 1);
+					// -- End: Change the content to trigger the editable redraw
 				}
 			}
 		});
