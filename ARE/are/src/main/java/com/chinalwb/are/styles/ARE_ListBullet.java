@@ -24,6 +24,7 @@ import static com.chinalwb.are.Util.isEmptyListItemSpan;
  * @author Wenbin Liu
  * 
  */
+@Deprecated
 public class ARE_ListBullet extends ARE_ABS_FreeStyle {
 
 	private ImageView mListBulletImageView;

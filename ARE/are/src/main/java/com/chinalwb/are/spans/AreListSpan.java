@@ -6,17 +6,10 @@ public abstract class AreListSpan implements LeadingMarginSpan {
     public static final int MIN_DEPTH = 1;
     public static final int MAX_DEPTH = 10;
 
-    protected static final int CONTENT_SPACING;
-    protected static final int HEADER_SPACING;
-    protected static final int HEADER_EXTRA_DIGIT_SPACING;
-    private static final int DEPTH_SPACING;
-
-    static {
-        CONTENT_SPACING = 12;
-        HEADER_SPACING = 24;
-        HEADER_EXTRA_DIGIT_SPACING = 16;
-        DEPTH_SPACING = 32;
-    }
+    protected static final int CONTENT_SPACING = 18;
+    protected static final int HEADER_SPACING = 36;
+    protected static final int HEADER_EXTRA_DIGIT_SPACING = 24;
+    private static final int DEPTH_SPACING = 48;
 
     enum ListType {
         OL {

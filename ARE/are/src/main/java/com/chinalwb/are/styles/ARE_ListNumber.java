@@ -22,6 +22,7 @@ import static com.chinalwb.are.Util.isEmptyListItemSpan;
  *
  * @author Wenbin Liu
  */
+@Deprecated
 public class ARE_ListNumber extends ARE_ABS_FreeStyle {
 
     private ImageView mListNumberImageView;
@@ -107,7 +108,7 @@ public class ARE_ListNumber extends ARE_ABS_FreeStyle {
                             start - 2, start - 1, ListNumberSpan.class);
                     if (null != aheadListNumberSpans && aheadListNumberSpans.length > 0) {
                         ListNumberSpan previousListItemSpan = aheadListNumberSpans[aheadListNumberSpans.length - 1];
-                        followingStartNumber = previousListItemSpan.getNumber();
+                        followingStartNumber = previousListItemSpan.getOrder();
                     }
                     for (int line = selectionLines[0]; line <= selectionLines[1]; ++line) {
                         int lineStart = Util.getThisLineStart(editText, line);
@@ -195,8 +196,8 @@ public class ARE_ListNumber extends ARE_ABS_FreeStyle {
                                     currListSpanStart, end - 1,
                                     Spanned.SPAN_INCLUSIVE_INCLUSIVE);
                         }
-                        makeLineAsList(currListSpan.getNumber() + 1);
-                        reNumberBehindListItemSpans(end, editable, currListSpan.getNumber());
+                        makeLineAsList(currListSpan.getOrder() + 1);
+                        reNumberBehindListItemSpans(end, editable, currListSpan.getOrder());
                     }
                 }
             }
@@ -207,9 +208,9 @@ public class ARE_ListNumber extends ARE_ABS_FreeStyle {
             int spanEnd = editable.getSpanEnd(listSpans[0]);
             ListNumberSpan firstSpan = listSpans[0];
             if (listSpans.length > 1) {
-                int firstSpanNumber = firstSpan.getNumber();
+                int firstSpanNumber = firstSpan.getOrder();
                 for (ListNumberSpan lns : listSpans) {
-                    if (lns.getNumber() < firstSpanNumber) {
+                    if (lns.getOrder() < firstSpanNumber) {
                         firstSpan = lns;
                     }
                 }
@@ -230,7 +231,7 @@ public class ARE_ListNumber extends ARE_ABS_FreeStyle {
                 if (editable.length() > spanEnd) {
                     ListNumberSpan[] spansBehind = editable.getSpans(spanEnd, spanEnd + 1, ListNumberSpan.class);
                     if (spansBehind.length > 0) {
-                        int removedNumber = firstSpan.getNumber();
+                        int removedNumber = firstSpan.getOrder();
                         reNumberBehindListItemSpans(spanStart, editable, removedNumber - 1);
                     }
                 }
@@ -270,7 +271,7 @@ public class ARE_ListNumber extends ARE_ABS_FreeStyle {
                 // 4. D
                 //
                 // mergeLists();
-                int previousNumber = firstSpan.getNumber();
+                int previousNumber = firstSpan.getOrder();
                 reNumberBehindListItemSpans(end, editable, previousNumber);
             }
         }
@@ -284,17 +285,17 @@ public class ARE_ListNumber extends ARE_ABS_FreeStyle {
         ListNumberSpan[] targetSpans = editable.getSpans(spanEnd, spanEnd + 1, ListNumberSpan.class);
         // logAllListItems(editable, false);
         if (targetSpans == null || targetSpans.length == 0) {
-            reNumberBehindListItemSpans(spanEnd, editable, listSpan.getNumber());
+            reNumberBehindListItemSpans(spanEnd, editable, listSpan.getOrder());
             return;
         }
         ListNumberSpan firstTargetSpan = targetSpans[0];
         ListNumberSpan lastTargetSpan = targetSpans[0];
 
         if (targetSpans.length > 0) {
-            int firstTargetSpanNumber = firstTargetSpan.getNumber();
-            int lastTargetSpanNumber = lastTargetSpan.getNumber();
+            int firstTargetSpanNumber = firstTargetSpan.getOrder();
+            int lastTargetSpanNumber = lastTargetSpan.getOrder();
             for (ListNumberSpan lns : targetSpans) {
-                int lnsNumber = lns.getNumber();
+                int lnsNumber = lns.getOrder();
                 if (lnsNumber < firstTargetSpanNumber) {
                     firstTargetSpan = lns;
                     firstTargetSpanNumber = lnsNumber;
@@ -318,7 +319,7 @@ public class ARE_ListNumber extends ARE_ABS_FreeStyle {
             editable.removeSpan(lns);
         }
         editable.setSpan(listSpan, spanStart, spanEnd, Spanned.SPAN_INCLUSIVE_INCLUSIVE);
-        reNumberBehindListItemSpans(spanEnd, editable, listSpan.getNumber());
+        reNumberBehindListItemSpans(spanEnd, editable, listSpan.getOrder());
     }
 
     private void updateCheckStatus() {
@@ -357,9 +358,9 @@ public class ARE_ListNumber extends ARE_ABS_FreeStyle {
             int index = 0;
             for (ListNumberSpan listItemSpan : behindListItemSpans) {
                 int newNumber = ++thisNumber;
-                Util.log("Change old number == " + listItemSpan.getNumber()
+                Util.log("Change old number == " + listItemSpan.getOrder()
                         + " to new number == " + newNumber);
-                listItemSpan.setNumber(newNumber);
+                listItemSpan.setOrder(newNumber);
                 ++index;
                 if (total == index) {
                     int newSpanEnd = editable.getSpanEnd(listItemSpan);

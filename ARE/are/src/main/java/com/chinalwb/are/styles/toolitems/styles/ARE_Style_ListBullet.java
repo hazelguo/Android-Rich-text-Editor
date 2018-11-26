@@ -303,7 +303,6 @@ public class ARE_Style_ListBullet extends ARE_ABS_FreeStyle {
 		EditText editText = getEditText();
 		Editable editable = editText.getText();
 		int start = Util.getThisLineStart(editText, line);
-		AreListSpan[] aheadListSpans = editable.getSpans(start - 2, start - 1, AreListSpan.class);
 		addZeroWidthSpaceStrSafe(editable, start);
 		start = Util.getThisLineStart(editText, line);
 		int end = Util.getThisLineEnd(editText, line);
@@ -315,10 +314,9 @@ public class ARE_Style_ListBullet extends ARE_ABS_FreeStyle {
 			end--;
 		}
 
+		AreListSpan[] currSpans = editable.getSpans(start, end, AreListSpan.class);
 		ListBulletSpan BulletListItemSpan = new ListBulletSpan(
-				aheadListSpans == null || aheadListSpans.length == 0 ?
-						1 : aheadListSpans[0].getDepth(),
-				0);
+				currSpans == null || currSpans.length == 0 ? 1 : currSpans[0].getDepth(), 0);
 		editable.setSpan(BulletListItemSpan, start, end,
 				Spannable.SPAN_INCLUSIVE_INCLUSIVE);
 	}

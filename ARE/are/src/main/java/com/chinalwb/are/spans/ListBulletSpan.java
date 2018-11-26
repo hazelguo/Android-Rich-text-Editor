@@ -8,14 +8,13 @@ import android.text.Layout;
 import android.text.Spanned;
 
 public class ListBulletSpan extends AreListSpan {
-	private static final int BULLET_RADIUS;
+	private static final int BULLET_RADIUS = 6;
 	private static final int X_OFFSET;
 
 	private static Path sBulletPath = null;
 	private float mYOffset = -1;
 
 	static {
-		BULLET_RADIUS = 4;
 		X_OFFSET = CONTENT_SPACING + BULLET_RADIUS;
 	}
 
