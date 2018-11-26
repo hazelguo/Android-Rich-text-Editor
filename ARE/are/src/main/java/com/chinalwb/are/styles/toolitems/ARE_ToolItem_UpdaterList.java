@@ -4,10 +4,11 @@ import android.view.View;
 
 import com.chinalwb.are.AREditText;
 import com.chinalwb.are.ButtonCheckStatusUtil;
+import com.chinalwb.are.styles.ARE_Helper;
 
 import java.util.List;
 
-public class ARE_ToolItem_UpdaterList extends ARE_ToolItem_UpdaterDefault {
+public abstract class ARE_ToolItem_UpdaterList extends ARE_ToolItem_UpdaterDefault {
     private final AREditText mEditText;
     private ARE_ToolItem_IndentLeft mToolItemIndentLeft;
     private ARE_ToolItem_IndentRight mToolItemIndentRight;

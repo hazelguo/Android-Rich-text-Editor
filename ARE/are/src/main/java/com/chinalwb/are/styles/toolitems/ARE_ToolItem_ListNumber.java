@@ -1,9 +1,7 @@
 package com.chinalwb.are.styles.toolitems;
 
 import android.content.Context;
-import android.text.Editable;
 import android.view.View;
-import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 
@@ -25,7 +23,7 @@ public class ARE_ToolItem_ListNumber extends ARE_ToolItem_Abstract {
     @Override
     public IARE_ToolItem_Updater getToolItemUpdater() {
         if (mToolItemUpdater == null) {
-            mToolItemUpdater = new ARE_ToolItem_UpdaterList(this, Constants.CHECKED_COLOR, Constants.UNCHECKED_COLOR);
+            mToolItemUpdater = new ARE_ToolItem_UpdaterListNumber(this, Constants.CHECKED_COLOR, Constants.UNCHECKED_COLOR);
             setToolItemUpdater(mToolItemUpdater);
         }
         return mToolItemUpdater;
