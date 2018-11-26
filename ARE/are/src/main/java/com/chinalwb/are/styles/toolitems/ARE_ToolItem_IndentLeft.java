@@ -6,27 +6,21 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 
 import com.chinalwb.are.AREditText;
-import com.chinalwb.are.ButtonCheckStatusUtil;
-import com.chinalwb.are.Constants;
 import com.chinalwb.are.R;
 import com.chinalwb.are.Util;
-import com.chinalwb.are.spans.ListBulletSpan;
+import com.chinalwb.are.styles.ARE_Bold;
 import com.chinalwb.are.styles.IARE_Style;
-import com.chinalwb.are.styles.toolitems.styles.ARE_Style_ListBullet;
+import com.chinalwb.are.styles.toolitems.styles.ARE_Style_Bold;
 
 /**
- * Created by wliu on 13/08/2018.
+ * Created by hazel G. on 26/11/2018.
  */
 
-public class ARE_ToolItem_ListBullet extends ARE_ToolItem_Abstract {
+public class ARE_ToolItem_IndentLeft extends ARE_ToolItem_Abstract {
 
     @Override
     public IARE_ToolItem_Updater getToolItemUpdater() {
-        if (mToolItemUpdater == null) {
-            mToolItemUpdater = new ARE_ToolItem_UpdaterList(this, Constants.CHECKED_COLOR, Constants.UNCHECKED_COLOR);
-            setToolItemUpdater(mToolItemUpdater);
-        }
-        return mToolItemUpdater;
+        return null;
     }
 
     @Override
@@ -34,7 +28,7 @@ public class ARE_ToolItem_ListBullet extends ARE_ToolItem_Abstract {
         if (mStyle == null) {
             AREditText editText = this.getEditText();
             IARE_ToolItem_Updater toolItemUpdater = getToolItemUpdater();
-            mStyle = new ARE_Style_ListBullet(editText, (ImageView) mToolItemView, toolItemUpdater);
+            mStyle = new ARE_Style_Bold(editText, (ImageView) mToolItemView, toolItemUpdater);
         }
         return mStyle;
     }
@@ -49,8 +43,9 @@ public class ARE_ToolItem_ListBullet extends ARE_ToolItem_Abstract {
             int size = Util.getPixelByDp(context, 40);
             LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(size, size);
             imageView.setLayoutParams(params);
-            imageView.setImageResource(R.drawable.listbullet);
+            imageView.setImageResource(R.drawable.indentleft);
             imageView.bringToFront();
+            imageView.setVisibility(View.GONE);
             mToolItemView = imageView;
         }
 
@@ -59,6 +54,5 @@ public class ARE_ToolItem_ListBullet extends ARE_ToolItem_Abstract {
 
     @Override
     public void onSelectionChanged(int selStart, int selEnd) {
-        mToolItemUpdater.onCheckStatusUpdate(ButtonCheckStatusUtil.shouldCheckButton(getEditText(), ListBulletSpan.class));
     }
 }

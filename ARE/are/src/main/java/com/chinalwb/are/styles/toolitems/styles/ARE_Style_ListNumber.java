@@ -339,27 +339,6 @@ public class ARE_Style_ListNumber extends ARE_ABS_FreeStyle {
         reNumberBehindListItemSpans(spanEnd, editable, listSpan.getNumber());
     }
 
-    private void logAllListItems(Editable editable, boolean printDetail) {
-        ListNumberSpan[] listItemSpans = editable.getSpans(0,
-                editable.length(), ListNumberSpan.class);
-        for (ListNumberSpan span : listItemSpans) {
-            int ss = editable.getSpanStart(span);
-            int se = editable.getSpanEnd(span);
-            int flag = editable.getSpanFlags(span);
-            Util.log("List All: " + span.getNumber() + " :: start == " + ss
-                    + ", end == " + se + ", flag == " + flag);
-           if (printDetail) {
-               for (int i = ss; i < se; i++) {
-                   Util.log("char at " + i + " = " + editable.charAt(i) + " int = " + ((int) (editable.charAt(i))));
-               }
-
-               if (editable.length() > se) {
-                   Util.log("char at " + se + " = " + editable.charAt(se)+ " int = " + ((int) (editable.charAt(se))));
-               }
-           }
-        }
-    }
-
     private ListNumberSpan makeLineAsList(int num) {
         EditText editText = getEditText();
         return makeLineAsList(Util.getCurrentCursorLine(editText), num);
@@ -408,9 +387,10 @@ public class ARE_Style_ListNumber extends ARE_ABS_FreeStyle {
     }
 
     private void updateCheckStatus(boolean isChecked) {
+        boolean oldChecked = mListBulletChecked;
         setChecked(isChecked);
         if (mCheckUpdater != null) {
-            mCheckUpdater.onCheckStatusUpdate(isChecked);
+            mCheckUpdater.onCheckStatusUpdate(oldChecked, isChecked);
         }
     }
 

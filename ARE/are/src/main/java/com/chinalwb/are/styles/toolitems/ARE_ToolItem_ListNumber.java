@@ -25,7 +25,7 @@ public class ARE_ToolItem_ListNumber extends ARE_ToolItem_Abstract {
     @Override
     public IARE_ToolItem_Updater getToolItemUpdater() {
         if (mToolItemUpdater == null) {
-            mToolItemUpdater = new ARE_ToolItem_UpdaterDefault(this, Constants.CHECKED_COLOR, Constants.UNCHECKED_COLOR);
+            mToolItemUpdater = new ARE_ToolItem_UpdaterList(this, Constants.CHECKED_COLOR, Constants.UNCHECKED_COLOR);
             setToolItemUpdater(mToolItemUpdater);
         }
         return mToolItemUpdater;

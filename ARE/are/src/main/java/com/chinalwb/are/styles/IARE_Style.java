@@ -35,8 +35,6 @@ public interface IARE_Style {
   
   /**
    * Sets if this style is checked.
-   * 
-   * @param isChecked
    */
   public void setChecked(boolean isChecked);
 

@@ -29,4 +29,9 @@ public class ARE_ToolItem_UpdaterDefault implements IARE_ToolItem_Updater {
         int color = checked ? mCheckedColor : mUncheckedColor;
         view.setBackgroundColor(color);
     }
+
+    @Override
+    public void onCheckStatusUpdate(boolean oldChecked, boolean newChecked) {
+        onCheckStatusUpdate(newChecked);
+    }
 }

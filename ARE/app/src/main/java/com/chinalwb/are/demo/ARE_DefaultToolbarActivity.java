@@ -20,6 +20,7 @@ import com.chinalwb.are.styles.toolitems.ARE_ToolItem_Bold;
 import com.chinalwb.are.styles.toolitems.ARE_ToolItem_FontSize;
 import com.chinalwb.are.styles.toolitems.ARE_ToolItem_Hr;
 import com.chinalwb.are.styles.toolitems.ARE_ToolItem_Image;
+import com.chinalwb.are.styles.toolitems.ARE_ToolItem_IndentLeft;
 import com.chinalwb.are.styles.toolitems.ARE_ToolItem_Italic;
 import com.chinalwb.are.styles.toolitems.ARE_ToolItem_Link;
 import com.chinalwb.are.styles.toolitems.ARE_ToolItem_ListBullet;
@@ -61,6 +62,7 @@ public class ARE_DefaultToolbarActivity extends AppCompatActivity {
         IARE_ToolItem quote = new ARE_ToolItem_Quote();
         IARE_ToolItem listNumber = new ARE_ToolItem_ListNumber();
         IARE_ToolItem listBullet = new ARE_ToolItem_ListBullet();
+        IARE_ToolItem indentLeft = new ARE_ToolItem_IndentLeft();
         IARE_ToolItem hr = new ARE_ToolItem_Hr();
         IARE_ToolItem link = new ARE_ToolItem_Link();
         IARE_ToolItem subscript = new ARE_ToolItem_Subscript();
@@ -80,6 +82,7 @@ public class ARE_DefaultToolbarActivity extends AppCompatActivity {
         mToolbar.addToolbarItem(quote);
         mToolbar.addToolbarItem(listNumber);
         mToolbar.addToolbarItem(listBullet);
+        mToolbar.addToolbarItem(indentLeft);
         mToolbar.addToolbarItem(hr);
         mToolbar.addToolbarItem(link);
         mToolbar.addToolbarItem(subscript);

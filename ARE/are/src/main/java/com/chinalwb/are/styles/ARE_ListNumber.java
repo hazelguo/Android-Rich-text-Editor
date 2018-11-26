@@ -322,7 +322,7 @@ public class ARE_ListNumber extends ARE_ABS_FreeStyle {
     }
 
     private void updateCheckStatus() {
-        mListBulletChecked = ButtonCheckStatusUtil.shouldCheckButton(getEditText(), ListNumberSpan.class);
+        setChecked(ButtonCheckStatusUtil.shouldCheckButton(getEditText(), ListNumberSpan.class));
     }
 
     private ListNumberSpan makeLineAsList(int num) {
