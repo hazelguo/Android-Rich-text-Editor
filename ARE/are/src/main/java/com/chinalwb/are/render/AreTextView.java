@@ -11,8 +11,6 @@ import com.chinalwb.are.Constants;
 import com.chinalwb.are.Util;
 import com.chinalwb.are.android.inner.Html;
 import com.chinalwb.are.events.AREMovementMethod;
-import com.chinalwb.are.strategies.AreClickStrategy;
-import com.chinalwb.are.strategies.defaults.DefaultClickStrategy;
 
 import java.util.HashMap;
 
@@ -22,8 +20,6 @@ import java.util.HashMap;
 public class AreTextView extends AppCompatTextView {
 
     private static HashMap<String, Spanned> spannedHashMap = new HashMap<>();
-
-    private AreClickStrategy mClickStrategy;
 
     Context mContext;
 
@@ -50,10 +46,7 @@ public class AreTextView extends AppCompatTextView {
     }
 
     private void initMovementMethod() {
-        if (this.mClickStrategy == null) {
-            this.mClickStrategy = new DefaultClickStrategy();
-        }
-        this.setMovementMethod(new AREMovementMethod(this.mClickStrategy));
+        this.setMovementMethod(new AREMovementMethod());
     }
 
     public void fromHtml(String html) {
@@ -63,9 +56,8 @@ public class AreTextView extends AppCompatTextView {
 
     private Spanned getSpanned(String html) {
         Html.sContext = mContext;
-        Html.ImageGetter imageGetter = new AreImageGetter(mContext, this);
         Html.TagHandler tagHandler = new AreTagHandler();
-        return Html.fromHtml(html, Html.FROM_HTML_SEPARATOR_LINE_BREAK_PARAGRAPH, imageGetter, tagHandler);
+        return Html.fromHtml(html, Html.FROM_HTML_SEPARATOR_LINE_BREAK_PARAGRAPH, tagHandler);
     }
 
     /**
@@ -90,9 +82,5 @@ public class AreTextView extends AppCompatTextView {
 
     public static void clearCache() {
         spannedHashMap.clear();
-    }
-
-    public void setClickStrategy(AreClickStrategy clickStrategy) {
-        this.mClickStrategy = clickStrategy;
     }
 }

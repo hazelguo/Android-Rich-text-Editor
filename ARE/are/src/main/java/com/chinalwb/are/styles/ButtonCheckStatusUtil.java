@@ -1,10 +1,12 @@
-package com.chinalwb.are;
+package com.chinalwb.are.styles;
 
 import android.text.Editable;
+import android.view.View;
 import android.widget.EditText;
 
+import com.chinalwb.are.Constants;
+import com.chinalwb.are.Util;
 import com.chinalwb.are.spans.AreListSpan;
-import com.chinalwb.are.spans.ListBulletSpan;
 
 public class ButtonCheckStatusUtil {
     public static boolean shouldCheckButton(EditText editText, Class type) {
@@ -44,5 +46,15 @@ public class ButtonCheckStatusUtil {
             }
         }
         return true;
+    }
+
+    /**
+     * Updates the check status.
+     */
+    public static void updateCheckStatus(IARE_Style areStyle, boolean checked) {
+        areStyle.setChecked(checked);
+        View imageView = areStyle.getImageView();
+        int color = checked ? Constants.CHECKED_COLOR : Constants.UNCHECKED_COLOR;
+        imageView.setBackgroundColor(color);
     }
 }

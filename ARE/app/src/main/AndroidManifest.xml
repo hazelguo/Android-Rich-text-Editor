@@ -29,26 +29,9 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity
-            android:name=".AtActivity"
-            android:label="@string/title_activity_at"
-            android:theme="@style/AppTheme.NoActionBar" />
         <activity android:name=".TextViewActivity" />
-        <activity
-            android:name=".ARE_FullBottomActivity"
-            android:label="@string/title_activity_are__full_bottom" />
-        <activity
-            android:name=".ARE_FullTopActivity"
-            android:label="@string/title_activity_are__full_top" />
-        <activity
-            android:name=".ARE_MinBottomActivity"
-            android:label="@string/title_activity_are__min_bottom" />
-        <activity android:name=".ARE_MinTopActivity"
-            android:label="@string/title_activity_are__min_top" />
-        <activity android:name=".ARE_MinHideActivity"
-            android:label="@string/title_activity_are__min_hide" />
         <activity android:name=".ARE_DefaultToolbarActivity"
-            android:label="@string/title_activity_are__default_toolbar" />
+                  android:label="@string/title_activity_are__default_toolbar" />
     </application>
 
 </manifest>

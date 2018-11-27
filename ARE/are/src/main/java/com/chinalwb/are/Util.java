@@ -47,18 +47,12 @@ public class Util {
         Toast.makeText(context, msg, Toast.LENGTH_LONG).show();
     }
 
-    /**
-     * @param s
-     */
     public static void log(String s) {
         Log.d("CAKE", s);
     }
 
     /**
      * Returns the line number of current cursor.
-     *
-     * @param editText
-     * @return
      */
     public static int getCurrentCursorLine(EditText editText) {
         int selectionStart = Selection.getSelectionStart(editText.getText());
@@ -89,9 +83,6 @@ public class Util {
 
     /**
      * Returns the selected area line numbers.
-     *
-     * @param editText
-     * @return
      */
     public static int[] getCurrentSelectionLines(EditText editText) {
         Editable editable = editText.getText();
@@ -119,9 +110,6 @@ public class Util {
 
     /**
      * Returns the line start position of the current line (which cursor is focusing now).
-     *
-     * @param editText
-     * @return
      */
     public static int getThisLineStart(EditText editText, int currentLine) {
         Layout layout = editText.getLayout();
@@ -150,9 +138,6 @@ public class Util {
 
     /**
      * Returns the line end position of the current line (which cursor is focusing now).
-     *
-     * @param editText
-     * @return
      */
     public static int getThisLineEnd(EditText editText, int currentLine) {
         Layout layout = editText.getLayout();
@@ -164,24 +149,15 @@ public class Util {
 
     /**
      * Gets the pixels by the given number of dp.
-     *
-     * @param context
-     * @param dp
-     * @return
      */
     public static int getPixelByDp(Context context, int dp) {
-        int pixels = dp;
         DisplayMetrics displayMetrics = new DisplayMetrics();
         ((Activity) context).getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
-        pixels = (int) (displayMetrics.density * dp + 0.5);
-        return pixels;
+        return ((int) (displayMetrics.density * dp + 0.5));
     }
 
     /**
      * Returns the screen width and height.
-     *
-     * @param context
-     * @return
      */
     public static int[] getScreenWidthAndHeight(Context context) {
         Point outSize = new Point();
@@ -197,11 +173,6 @@ public class Util {
 
     /**
      * Returns the color in string format.
-     *
-     * @param intColor
-     * @param containsAlphaChannel
-     * @param removeAlphaFromResult
-     * @return
      */
     public static String colorToString(int intColor, boolean containsAlphaChannel, boolean removeAlphaFromResult) {
         String strColor = String.format("#%06X", 0xFFFFFF & intColor);
@@ -441,9 +412,4 @@ public class Util {
         int lineEnd = Util.getThisLineEnd(editText, line);
         return editable.getSpans(lineStart, lineEnd, AreListSpan.class);
     }
-
-    public static AreListSpan[] getListSpanForLine(EditText editText, int line) {
-        return getListSpanForLine(editText, editText.getText(), line);
-    }
-
 }

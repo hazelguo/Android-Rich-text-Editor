@@ -9,7 +9,7 @@ import android.widget.EditText;
 import android.widget.ImageView;
 
 import com.chinalwb.are.AREditText;
-import com.chinalwb.are.ButtonCheckStatusUtil;
+import com.chinalwb.are.styles.ButtonCheckStatusUtil;
 import com.chinalwb.are.Constants;
 import com.chinalwb.are.Util;
 import com.chinalwb.are.spans.AreListSpan;
@@ -31,8 +31,6 @@ import static com.chinalwb.are.Util.isEmptyListItemSpan;
  */
 public class ARE_Style_ListNumber extends ARE_ABS_FreeStyle {
 
-    private AREditText mEditText;
-
     private ImageView mListNumberImageView;
 
     private IARE_ToolItem_Updater mCheckUpdater;
@@ -40,16 +38,10 @@ public class ARE_Style_ListNumber extends ARE_ABS_FreeStyle {
     private boolean mListBulletChecked;
 
     public ARE_Style_ListNumber(AREditText editText, ImageView imageView, IARE_ToolItem_Updater checkUpdater) {
-        super(editText.getContext());
-        this.mEditText = editText;
+        super(editText);
         this.mListNumberImageView = imageView;
         mCheckUpdater = checkUpdater;
         setListenerForImageView(this.mListNumberImageView);
-    }
-
-    @Override
-    public EditText getEditText() {
-        return this.mEditText;
     }
 
     /**
@@ -89,13 +81,12 @@ public class ARE_Style_ListNumber extends ARE_ABS_FreeStyle {
         imageView.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                EditText editText = getEditText();
-                Editable editable = editText.getText();
-                int[] selectionLines = Util.getCurrentSelectionLines(editText);
+                Editable editable = mEditText.getText();
+                int[] selectionLines = Util.getCurrentSelectionLines(mEditText);
                 // Note that we use start & end instead of selectionStart & selectionEnd because
                 // partial selection should be treated as full-line selection in number span.
-                int start = Util.getThisLineStart(editText, selectionLines[0]);
-                int end = Util.getThisLineEnd(editText, selectionLines[1]);
+                int start = Util.getThisLineStart(mEditText, selectionLines[0]);
+                int end = Util.getThisLineEnd(mEditText, selectionLines[1]);
 
                 // Remove all ListBulletSpan in the selection:
                 //   Convert Case 3 to Case 1.
@@ -129,8 +120,8 @@ public class ARE_Style_ListNumber extends ARE_ABS_FreeStyle {
                     for (int line = selectionLines[0]; line <= selectionLines[1]; ++line) {
                         followingStartNumber ++;
 
-                        int lineStart = Util.getThisLineStart(editText, line);
-                        int lineEnd = Util.getThisLineEnd(editText, line);
+                        int lineStart = Util.getThisLineStart(mEditText, line);
+                        int lineEnd = Util.getThisLineEnd(mEditText, line);
                         ListNumberSpan[] spans = editable.getSpans(lineStart, lineEnd, ListNumberSpan.class);
                         if (spans != null && spans.length > 0) {
                             spans[0].setOrder(followingStartNumber);
@@ -141,10 +132,10 @@ public class ARE_Style_ListNumber extends ARE_ABS_FreeStyle {
                     setChecked(true);
                 }
                 // Reget the end of selection because the text length may change as we add/remove spans
-                reNumberBehindListItemSpansForLine(editText, selectionLines[1]);
+                reNumberBehindListItemSpansForLine(mEditText, selectionLines[1]);
 
                 for (int line = selectionLines[0]; line <= selectionLines[1]; ++line) {
-                    int lineStart = Util.getThisLineStart(editText, line);
+                    int lineStart = Util.getThisLineStart(mEditText, line);
                     // -- Change the content to trigger the editable redraw
                     editable.insert(lineStart, Constants.ZERO_WIDTH_SPACE_STR);
                     editable.delete(lineStart + 1, lineStart + 1);
@@ -211,7 +202,7 @@ public class ARE_Style_ListNumber extends ARE_ABS_FreeStyle {
                         // Deletes the ZERO_WIDTH_SPACE_STR and \n
                         editable.delete(currListSpanStart, currListSpanEnd);
                         // Restart the number for any list spans after the removed span.
-                        reNumberBehindListItemSpansForOffset(getEditText(), currListSpanStart);
+                        reNumberBehindListItemSpansForOffset(mEditText, currListSpanStart);
                     } else {
                         if (end > currListSpanStart) {
                             editable.removeSpan(currListSpan);
@@ -220,7 +211,7 @@ public class ARE_Style_ListNumber extends ARE_ABS_FreeStyle {
                                     Spanned.SPAN_INCLUSIVE_INCLUSIVE);
                         }
                         makeLineAsList(currListSpan);
-                        reNumberBehindListItemSpansForOffset(getEditText(), end);
+                        reNumberBehindListItemSpansForOffset(mEditText, end);
                     }
                 }
             }
@@ -254,7 +245,7 @@ public class ARE_Style_ListNumber extends ARE_ABS_FreeStyle {
                 if (editable.length() > spanEnd) {
                     ListNumberSpan[] spansBehind = editable.getSpans(spanEnd, spanEnd + 1, ListNumberSpan.class);
                     if (spansBehind.length > 0) {
-                        reNumberBehindListItemSpansForOffset(getEditText(), spanStart);
+                        reNumberBehindListItemSpansForOffset(mEditText, spanStart);
                     }
                 }
             } else if (start == spanStart) {
@@ -293,7 +284,7 @@ public class ARE_Style_ListNumber extends ARE_ABS_FreeStyle {
                 // 4. D
                 //
                 // mergeLists();
-                reNumberBehindListItemSpansForOffset(getEditText(), end);
+                reNumberBehindListItemSpansForOffset(mEditText, end);
             }
         }
         updateCheckStatus();
@@ -308,7 +299,7 @@ public class ARE_Style_ListNumber extends ARE_ABS_FreeStyle {
         ListNumberSpan[] targetSpans = editable.getSpans(spanEnd, spanEnd + 1, ListNumberSpan.class);
         // logAllListItems(editable, false);
         if (targetSpans == null || targetSpans.length == 0) {
-            reNumberBehindListItemSpansForOffset(getEditText(), spanEnd);
+            reNumberBehindListItemSpansForOffset(mEditText, spanEnd);
             return;
         }
         ListNumberSpan firstTargetSpan = targetSpans[0];
@@ -342,12 +333,11 @@ public class ARE_Style_ListNumber extends ARE_ABS_FreeStyle {
             editable.removeSpan(lns);
         }
         editable.setSpan(listSpan, spanStart, spanEnd, Spanned.SPAN_INCLUSIVE_INCLUSIVE);
-        reNumberBehindListItemSpansForOffset(getEditText(), spanEnd);
+        reNumberBehindListItemSpansForOffset(mEditText, spanEnd);
     }
 
     private ListNumberSpan makeLineAsList(ListNumberSpan prevSpan) {
-        EditText editText = getEditText();
-        return makeLineAsList(Util.getCurrentCursorLine(editText), prevSpan.getDepth(), prevSpan.getOrder() + 1);
+        return makeLineAsList(Util.getCurrentCursorLine(mEditText), prevSpan.getDepth(), prevSpan.getOrder() + 1);
     }
 
     /**
@@ -355,12 +345,11 @@ public class ARE_Style_ListNumber extends ARE_ABS_FreeStyle {
      *              the current depth if a ListSpan exists, or 1 if no ListSpan exists
      */
     private ListNumberSpan makeLineAsList(int line, int depth, int num) {
-        EditText editText = getEditText();
-        Editable editable = editText.getText();
-        int start = Util.getThisLineStart(editText, line);
+        Editable editable = mEditText.getText();
+        int start = Util.getThisLineStart(mEditText, line);
         addZeroWidthSpaceStrSafe(editable, start);
-        start = Util.getThisLineStart(editText, line);
-        int end = Util.getThisLineEnd(editText, line);
+        start = Util.getThisLineStart(mEditText, line);
+        int end = Util.getThisLineEnd(mEditText, line);
 
         if (end > 0 && editable.charAt(end - 1) == Constants.CHAR_NEW_LINE) {
             end--;
@@ -484,7 +473,7 @@ public class ARE_Style_ListNumber extends ARE_ABS_FreeStyle {
     }
 
     private void updateCheckStatus() {
-        updateCheckStatus(ButtonCheckStatusUtil.shouldCheckButton(getEditText(), ListNumberSpan.class));
+        updateCheckStatus(ButtonCheckStatusUtil.shouldCheckButton(mEditText, ListNumberSpan.class));
     }
 
     private void updateCheckStatus(boolean isChecked) {

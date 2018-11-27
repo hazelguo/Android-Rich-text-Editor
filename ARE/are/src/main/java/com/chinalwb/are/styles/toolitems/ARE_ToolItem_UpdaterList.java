@@ -3,8 +3,7 @@ package com.chinalwb.are.styles.toolitems;
 import android.view.View;
 
 import com.chinalwb.are.AREditText;
-import com.chinalwb.are.ButtonCheckStatusUtil;
-import com.chinalwb.are.styles.ARE_Helper;
+import com.chinalwb.are.styles.ButtonCheckStatusUtil;
 
 import java.util.List;
 

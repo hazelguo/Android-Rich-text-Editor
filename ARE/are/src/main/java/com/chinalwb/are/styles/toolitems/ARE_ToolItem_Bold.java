@@ -76,7 +76,6 @@ public class ARE_ToolItem_Bold extends ARE_ToolItem_Abstract {
                 }
             }
         } else {
-			//
 			// Selection is a range
 			CharacterStyle[] styleSpans = editable.getSpans(selStart, selEnd, CharacterStyle.class);
 

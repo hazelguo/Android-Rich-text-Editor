@@ -16,11 +16,10 @@ import com.chinalwb.are.styles.ARE_ABS_FreeStyle;
  */
 
 public abstract class ARE_Style_Indent extends ARE_ABS_FreeStyle {
-    private final EditText mEditText;
     private final ImageView mIndentRightImageView;
 
     public ARE_Style_Indent(AREditText editText, ImageView imageView) {
-        super(editText.getContext());
+        super(editText);
         mEditText = editText;
         mIndentRightImageView = imageView;
         setListenerForImageView(imageView);

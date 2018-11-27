@@ -9,14 +9,13 @@ import android.widget.EditText;
 import android.widget.ImageView;
 
 import com.chinalwb.are.AREditText;
-import com.chinalwb.are.ButtonCheckStatusUtil;
+import com.chinalwb.are.styles.ButtonCheckStatusUtil;
 import com.chinalwb.are.Constants;
 import com.chinalwb.are.Util;
 import com.chinalwb.are.spans.AreListSpan;
 import com.chinalwb.are.spans.ListBulletSpan;
 import com.chinalwb.are.spans.ListNumberSpan;
 import com.chinalwb.are.styles.ARE_ABS_FreeStyle;
-import com.chinalwb.are.styles.ARE_ListNumber;
 import com.chinalwb.are.styles.toolitems.IARE_ToolItem_Updater;
 
 import static com.chinalwb.are.Util.addZeroWidthSpaceStrSafe;
@@ -29,9 +28,6 @@ import static com.chinalwb.are.Util.isEmptyListItemSpan;
  * 
  */
 public class ARE_Style_ListBullet extends ARE_ABS_FreeStyle {
-
-	private AREditText mEditText;
-
 	private ImageView mListBulletImageView;
 
 	private IARE_ToolItem_Updater mCheckUpdater;
@@ -39,16 +35,10 @@ public class ARE_Style_ListBullet extends ARE_ABS_FreeStyle {
 	private boolean mListBulletChecked;
 
 	public ARE_Style_ListBullet(AREditText editText, ImageView imageView, IARE_ToolItem_Updater checkUpdater) {
-		super(editText.getContext());
-		this.mEditText = editText;
+		super(editText);
 		this.mListBulletImageView = imageView;
 		this.mCheckUpdater = checkUpdater;
 		setListenerForImageView(this.mListBulletImageView);
-	}
-
-	@Override
-	public EditText getEditText() {
-		return this.mEditText;
 	}
 
 	@Override
@@ -56,11 +46,10 @@ public class ARE_Style_ListBullet extends ARE_ABS_FreeStyle {
 		imageView.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				EditText editText = getEditText();
-				Editable editable = editText.getText();
-				int[] selectionLines = Util.getCurrentSelectionLines(editText);
-				int start = Util.getThisLineStart(editText, selectionLines[0]);
-				int end = Util.getThisLineEnd(editText, selectionLines[1]);
+				Editable editable = mEditText.getText();
+				int[] selectionLines = Util.getCurrentSelectionLines(mEditText);
+				int start = Util.getThisLineStart(mEditText, selectionLines[0]);
+				int end = Util.getThisLineEnd(mEditText, selectionLines[1]);
 				//
 				// Check if there is any ListNumberSpan. If so, remove existing ListNumberSpans
 				// in the selection and reorder ListNumberSpans after the selection.
@@ -87,7 +76,7 @@ public class ARE_Style_ListBullet extends ARE_ABS_FreeStyle {
 					ListNumberSpan lastListNumberSpan = listNumberSpans[len - 1];
 					int lastListNumberSpanEnd = editable.getSpanEnd(lastListNumberSpan);
 
-					ARE_Style_ListNumber.reNumberBehindListItemSpansForOffset(editText, lastListNumberSpanEnd);
+					ARE_Style_ListNumber.reNumberBehindListItemSpansForOffset(mEditText, lastListNumberSpanEnd);
 
 					// - Remove all ListNumberSpan
 					for (ListNumberSpan listNumberSpan : listNumberSpans) {
@@ -112,8 +101,8 @@ public class ARE_Style_ListBullet extends ARE_ABS_FreeStyle {
 						// Then the user selects both lines and clicks bullet icon. In this case, the
 						// bullet span on "aa" should be kept, whereas, a bullet span should be
 						// added to "bb".
-						int lineStart = Util.getThisLineStart(editText, line);
-						int lineEnd = Util.getThisLineEnd(editText, line);
+						int lineStart = Util.getThisLineStart(mEditText, line);
+						int lineEnd = Util.getThisLineEnd(mEditText, line);
 						int nextSpanStart = editable.nextSpanTransition(lineStart - 1, lineEnd, ListBulletSpan.class);
 						if (nextSpanStart >= lineEnd) {
 							makeLineAsBullet(line, -1);

@@ -19,17 +19,8 @@ package com.chinalwb.are.android.inner;
 //import com.android.internal.util.ArrayUtils;
 
 import android.content.Context;
-import android.content.res.Resources;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.Paint;
 import android.graphics.Typeface;
-import android.graphics.drawable.Drawable;
-import android.media.ThumbnailUtils;
-import android.net.Uri;
-import android.provider.MediaStore;
 import android.text.Editable;
 import android.text.Layout;
 import android.text.Spannable;
@@ -55,19 +46,9 @@ import android.text.style.URLSpan;
 import android.text.style.UnderlineSpan;
 
 import com.chinalwb.are.Constants;
-import com.chinalwb.are.R;
 import com.chinalwb.are.Util;
-import com.chinalwb.are.models.AtItem;
 import com.chinalwb.are.spans.ARE_Span;
-import com.chinalwb.are.spans.AreAtSpan;
-import com.chinalwb.are.spans.AreFontSizeSpan;
-import com.chinalwb.are.spans.AreHrSpan;
-import com.chinalwb.are.spans.AreImageSpan;
 import com.chinalwb.are.spans.AreListSpan;
-import com.chinalwb.are.spans.AreQuoteSpan;
-import com.chinalwb.are.spans.AreUrlSpan;
-import com.chinalwb.are.spans.AreVideoSpan;
-import com.chinalwb.are.spans.EmojiSpan;
 import com.chinalwb.are.spans.ListBulletSpan;
 import com.chinalwb.are.spans.ListNumberSpan;
 
@@ -88,8 +69,6 @@ import java.util.Stack;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static com.chinalwb.are.android.inner.Html.sContext;
-
 /**
  * This class processes HTML strings into displayable styled text.
  * Not all HTML tags are supported.
@@ -104,22 +83,6 @@ public class Html {
     public static final String UL = "ul";
 
     public static int sListNumber = -1;
-
-    /**
-     * Retrieves images for HTML &lt;img&gt; tags.
-     */
-    public static interface ImageGetter {
-        /**
-         * This method is called when the HTML parser encounters an
-         * &lt;img&gt; tag.  The <code>source</code> argument is the
-         * string from the "src" attribute; the return value should be
-         * a Drawable representation of the image or <code>null</code>
-         * for a generic replacement image.  Make sure you call
-         * setBounds() on your Drawable if it doesn't already have
-         * its bounds set.
-         */
-        public Drawable getDrawable(String source);
-    }
 
     /**
      * Is notified when HTML tags are encountered that the parser does
@@ -190,14 +153,14 @@ public class Html {
     public static final int FROM_HTML_OPTION_USE_CSS_COLORS = 0x00000100;
 
     /**
-     * Flags for {@link #fromHtml(String, int, ImageGetter, TagHandler)}: Separate block-level
+     * Flags for {@link #fromHtml(String, int, TagHandler)}: Separate block-level
      * elements with blank lines (two newline characters) in between. This is the legacy behavior
      * prior to N.
      */
     public static final int FROM_HTML_MODE_LEGACY = 0x00000000;
 
     /**
-     * Flags for {@link #fromHtml(String, int, ImageGetter, TagHandler)}: Separate block-level
+     * Flags for {@link #fromHtml(String, int, TagHandler)}: Separate block-level
      * elements with line breaks (single newline character) in between. This inverts the
      * {@link Spanned} to HTML string conversion done with the option
      * {@link #TO_HTML_PARAGRAPH_LINES_INDIVIDUAL}.
@@ -225,7 +188,7 @@ public class Html {
      */
     @Deprecated
     public static Spanned fromHtml(String source) {
-        return fromHtml(source, FROM_HTML_MODE_LEGACY, null, null);
+        return fromHtml(source, FROM_HTML_MODE_LEGACY, null);
     }
 
     /**
@@ -236,7 +199,7 @@ public class Html {
      * <p>This uses TagSoup to handle real HTML, including all of the brokenness found in the wild.
      */
     public static Spanned fromHtml(String source, int flags) {
-        return fromHtml(source, flags, null, null);
+        return fromHtml(source, flags, null);
     }
 
     /**
@@ -252,11 +215,11 @@ public class Html {
      * Returns displayable styled text from the provided HTML string with the legacy flags
      * {@link #FROM_HTML_MODE_LEGACY}.
      *
-     * @deprecated use {@link #fromHtml(String, int, ImageGetter, TagHandler)} instead.
+     * @deprecated use {@link #fromHtml(String, int, TagHandler)} instead.
      */
     @Deprecated
-    public static Spanned fromHtml(String source, ImageGetter imageGetter, TagHandler tagHandler) {
-        return fromHtml(source, FROM_HTML_MODE_LEGACY, imageGetter, tagHandler);
+    public static Spanned fromHtml(String source, TagHandler tagHandler) {
+        return fromHtml(source, FROM_HTML_MODE_LEGACY, tagHandler);
     }
 
     /**
@@ -267,8 +230,7 @@ public class Html {
      *
      * <p>This uses TagSoup to handle real HTML, including all of the brokenness found in the wild.
      */
-    public static Spanned fromHtml(String source, int flags, ImageGetter imageGetter,
-            TagHandler tagHandler) {
+    public static Spanned fromHtml(String source, int flags, TagHandler tagHandler) {
         Parser parser = new Parser();
         try {
             parser.setProperty(Parser.schemaProperty, HtmlParser.schema);
@@ -281,7 +243,7 @@ public class Html {
         }
 
         HtmlToSpannedConverter converter =
-                new HtmlToSpannedConverter(source, imageGetter, tagHandler, parser, flags);
+                new HtmlToSpannedConverter(source, tagHandler, parser, flags);
         return converter.convert();
     }
 
@@ -773,7 +735,6 @@ class HtmlToSpannedConverter implements ContentHandler {
     private String mSource;
     private XMLReader mReader;
     private SpannableStringBuilder mSpannableStringBuilder;
-    private Html.ImageGetter mImageGetter;
     private Html.TagHandler mTagHandler;
     private int mFlags;
 
@@ -837,11 +798,9 @@ class HtmlToSpannedConverter implements ContentHandler {
         return sFontSizePattern;
     }
 
-    public HtmlToSpannedConverter( String source, Html.ImageGetter imageGetter,
-            Html.TagHandler tagHandler, Parser parser, int flags) {
+    public HtmlToSpannedConverter( String source, Html.TagHandler tagHandler, Parser parser, int flags) {
         mSource = source;
         mSpannableStringBuilder = new SpannableStringBuilder();
-        mImageGetter = imageGetter;
         mTagHandler = tagHandler;
         mReader = parser;
         mFlags = flags;
@@ -929,38 +888,14 @@ class HtmlToSpannedConverter implements ContentHandler {
             start(mSpannableStringBuilder, new Big());
         } else if (tag.equalsIgnoreCase("small")) {
             start(mSpannableStringBuilder, new Small());
-        } else if (tag.equalsIgnoreCase("font")) {
-            startFont(mSpannableStringBuilder, attributes);
-        } else if (tag.equalsIgnoreCase("blockquote")) {
-            startBlockquote(mSpannableStringBuilder, attributes);
         } else if (tag.equalsIgnoreCase("tt")) {
             start(mSpannableStringBuilder, new Monospace());
-        } else if (tag.equalsIgnoreCase("a")) {
-            startA(mSpannableStringBuilder, attributes);
         } else if (tag.equalsIgnoreCase("u")) {
             start(mSpannableStringBuilder, new Underline());
-        } else if (tag.equalsIgnoreCase("del")) {
-            start(mSpannableStringBuilder, new Strikethrough());
-        } else if (tag.equalsIgnoreCase("s")) {
-            start(mSpannableStringBuilder, new Strikethrough());
-        } else if (tag.equalsIgnoreCase("strike")) {
-            start(mSpannableStringBuilder, new Strikethrough());
-        } else if (tag.equalsIgnoreCase("sup")) {
-            start(mSpannableStringBuilder, new Super());
-        } else if (tag.equalsIgnoreCase("sub")) {
-            start(mSpannableStringBuilder, new Sub());
         } else if (tag.length() == 2 &&
                 Character.toLowerCase(tag.charAt(0)) == 'h' &&
                 tag.charAt(1) >= '1' && tag.charAt(1) <= '6') {
             startHeading(mSpannableStringBuilder, attributes, tag.charAt(1) - '1');
-        } else if (tag.equalsIgnoreCase("img")) {
-            startImg(mSpannableStringBuilder, attributes, mImageGetter);
-        } else if (tag.equalsIgnoreCase("video")) {
-            startVideo(mSpannableStringBuilder, attributes, mImageGetter);
-        } else if (tag.equalsIgnoreCase("hr")) {
-            startHr(mSpannableStringBuilder);
-        } else if (tag.equalsIgnoreCase("emoji")) {
-            startEmoji(mSpannableStringBuilder, attributes);
         } else if (mTagHandler != null) {
             mTagHandler.handleTag(true, tag, mSpannableStringBuilder, mReader);
         }
@@ -973,11 +908,11 @@ class HtmlToSpannedConverter implements ContentHandler {
             endCssStyle(mSpannableStringBuilder);
             endBlockElement(mSpannableStringBuilder);
         } else if (tag.equalsIgnoreCase("ol")) {
-            endOL(mSpannableStringBuilder);
-             endBlockElement(mSpannableStringBuilder);
+            endOL();
+            endBlockElement(mSpannableStringBuilder);
         } else if (tag.equalsIgnoreCase("ul")) {
-            endUL(mSpannableStringBuilder);
-             endBlockElement(mSpannableStringBuilder);
+            endUL();
+            endBlockElement(mSpannableStringBuilder);
         } else if (tag.equalsIgnoreCase("li")) {
             endLi(mSpannableStringBuilder);
         } else if (tag.equalsIgnoreCase("div")) {
@@ -1000,26 +935,10 @@ class HtmlToSpannedConverter implements ContentHandler {
             end(mSpannableStringBuilder, Big.class, new RelativeSizeSpan(1.25f));
         } else if (tag.equalsIgnoreCase("small")) {
             end(mSpannableStringBuilder, Small.class, new RelativeSizeSpan(0.8f));
-        } else if (tag.equalsIgnoreCase("font")) {
-            endFont(mSpannableStringBuilder);
-        } else if (tag.equalsIgnoreCase("blockquote")) {
-            endBlockquote(mSpannableStringBuilder);
         } else if (tag.equalsIgnoreCase("tt")) {
             end(mSpannableStringBuilder, Monospace.class, new TypefaceSpan("monospace"));
-        } else if (tag.equalsIgnoreCase("a")) {
-            endA(mSpannableStringBuilder);
         } else if (tag.equalsIgnoreCase("u")) {
             end(mSpannableStringBuilder, Underline.class, new UnderlineSpan());
-        } else if (tag.equalsIgnoreCase("del")) {
-            end(mSpannableStringBuilder, Strikethrough.class, new StrikethroughSpan());
-        } else if (tag.equalsIgnoreCase("s")) {
-            end(mSpannableStringBuilder, Strikethrough.class, new StrikethroughSpan());
-        } else if (tag.equalsIgnoreCase("strike")) {
-            end(mSpannableStringBuilder, Strikethrough.class, new StrikethroughSpan());
-        } else if (tag.equalsIgnoreCase("sup")) {
-            end(mSpannableStringBuilder, Super.class, new SuperscriptSpan());
-        } else if (tag.equalsIgnoreCase("sub")) {
-            end(mSpannableStringBuilder, Sub.class, new SubscriptSpan());
         } else if (tag.length() == 2 &&
                 Character.toLowerCase(tag.charAt(0)) == 'h' &&
                 tag.charAt(1) >= '1' && tag.charAt(1) <= '6') {
@@ -1048,10 +967,6 @@ class HtmlToSpannedConverter implements ContentHandler {
 
     private int getMarginDiv() {
         return getMargin(Html.FROM_HTML_SEPARATOR_LINE_BREAK_DIV);
-    }
-
-    private int getMarginBlockquote() {
-        return getMargin(Html.FROM_HTML_SEPARATOR_LINE_BREAK_BLOCKQUOTE);
     }
 
     /**
@@ -1085,25 +1000,9 @@ class HtmlToSpannedConverter implements ContentHandler {
     }
 
     private static void startBlockElement(Editable text, Attributes attributes, int margin) {
-        final int len = text.length();
         if (margin > 0) {
             appendNewlines(text, margin);
             start(text, new Newline(margin));
-        }
-
-        String style = attributes.getValue("", "style");
-        if (style != null) {
-            Matcher m = getTextAlignPattern().matcher(style);
-            if (m.find()) {
-                String alignment = m.group(1);
-                if (alignment.equalsIgnoreCase("start")) {
-                    start(text, new Alignment(Layout.Alignment.ALIGN_NORMAL));
-                } else if (alignment.equalsIgnoreCase("center")) {
-                    start(text, new Alignment(Layout.Alignment.ALIGN_CENTER));
-                } else if (alignment.equalsIgnoreCase("end")) {
-                    start(text, new Alignment(Layout.Alignment.ALIGN_OPPOSITE));
-                }
-            }
         }
     }
 
@@ -1112,11 +1011,6 @@ class HtmlToSpannedConverter implements ContentHandler {
         if (n != null) {
             appendNewlines(text, n.mNumNewlines);
             text.removeSpan(n);
-        }
-
-        Alignment a = getLast(text, Alignment.class);
-        if (a != null) {
-            setSpanFromMark(text, a, new AlignmentSpan.Standard(a.mAlignment));
         }
     }
 
@@ -1131,7 +1025,7 @@ class HtmlToSpannedConverter implements ContentHandler {
         Html.sListNumber = 0;
     }
 
-    private void endOL(Editable text) {
+    private void endOL() {
         Html.sListNumber = -1;
         if (OL_UL_STACK.isEmpty()) {
             return;
@@ -1148,7 +1042,7 @@ class HtmlToSpannedConverter implements ContentHandler {
         OL_UL_STACK.push(ul);
     }
 
-    private void endUL(Editable text) {
+    private void endUL() {
         if (OL_UL_STACK.isEmpty()) {
             return;
         }
@@ -1179,16 +1073,6 @@ class HtmlToSpannedConverter implements ContentHandler {
         } else {
             end(text, Bullet.class, new ListBulletSpan(OL_UL_STACK.size(), peekEle.level));
         }
-    }
-
-    private void startBlockquote(Editable text, Attributes attributes) {
-        startBlockElement(text, attributes, getMarginBlockquote());
-        start(text, new Blockquote());
-    }
-
-    private static void endBlockquote(Editable text) {
-        endBlockElement(text);
-        end(text, Blockquote.class, new AreQuoteSpan());
     }
 
     private void startHeading(Editable text, Attributes attributes, int level) {
@@ -1264,29 +1148,10 @@ class HtmlToSpannedConverter implements ContentHandler {
                     start(text, new Background(c | 0xFF000000));
                 }
             }
-
-            m = getTextDecorationPattern().matcher(style);
-            if (m.find()) {
-                String textDecoration = m.group(1);
-                if (textDecoration.equalsIgnoreCase("line-through")) {
-                    start(text, new Strikethrough());
-                }
-            }
-
-            m = getFontSizePattern().matcher(style);
-            if (m.find()) {
-                int fontSize = getFontSize(m.group(1));
-                start(text, new FontSize(fontSize));
-            }
         }
     }
 
     private static void endCssStyle(Editable text) {
-        Strikethrough s = getLast(text, Strikethrough.class);
-        if (s != null) {
-            setSpanFromMark(text, s, new StrikethroughSpan());
-        }
-
         Background b = getLast(text, Background.class);
         if (b != null) {
             setSpanFromMark(text, b, new BackgroundColorSpan(b.mBackgroundColor));
@@ -1296,169 +1161,7 @@ class HtmlToSpannedConverter implements ContentHandler {
         if (f != null) {
             setSpanFromMark(text, f, new ForegroundColorSpan(f.mForegroundColor));
         }
-
-        FontSize fontSize = getLast(text, FontSize.class);
-        if (fontSize != null) {
-            setSpanFromMark(text, fontSize, new AreFontSizeSpan(fontSize.mFontSize));
-        }
     }
-
-    private static void startImg(Editable text, Attributes attributes, Html.ImageGetter img) {
-        String src = attributes.getValue("", "src");
-        Drawable d = null;
-        ImageSpan imageSpan = null;
-        if (img != null) {
-            d = img.getDrawable(src);
-            if (src.startsWith(Constants.EMOJI)) {
-                String resIdStr = src.substring(6);
-                int resId = Integer.parseInt(resIdStr);
-                imageSpan = new AreImageSpan(sContext, resId);
-            } else if (src.startsWith("http")) {
-                imageSpan = new AreImageSpan(sContext, d, src);
-            } else {
-                // content://com.android.providers.media.documents/document/image%3A33
-                // Such uri cannot be loaded from AreImageGetter.
-                imageSpan = new AreImageSpan(sContext, Uri.parse(src));
-            }
-        }
-
-        if (d == null) {
-            if (sContext == null) {
-                d = Resources.getSystem().getDrawable(R.drawable.ic_launcher);
-            } else {
-                d = sContext.getResources().getDrawable(R.drawable.ic_launcher);
-            }
-
-            d.setBounds(0, 0, d.getIntrinsicWidth(), d.getIntrinsicHeight());
-        }
-
-        int len = text.length();
-        text.append("\uFFFC");
-
-        text.setSpan(imageSpan, len, text.length(),
-                     Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-    }
-
-    private static void startVideo(Editable text, Attributes attributes, Html.ImageGetter img) {
-        Bitmap thumb = null;
-        String uriPath = attributes.getValue("", "uri");
-        String videoUrl = attributes.getValue("", "src");
-        thumb = ThumbnailUtils.createVideoThumbnail(uriPath, MediaStore.Images.Thumbnails.MINI_KIND);
-        if (thumb == null) {
-            // thumb = null; // TODO should load first frame bitmap
-            thumb = Bitmap.createBitmap(400, 300, Bitmap.Config.ARGB_8888);
-            Canvas canvas = new Canvas(thumb);
-            Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
-            paint.setColor(Color.BLACK);
-            canvas.drawRect(0, 0, 400, 300, paint);
-        }
-        Drawable d;
-        ImageSpan imageSpan;
-
-        Bitmap play = BitmapFactory.decodeResource(sContext.getResources(), R.drawable.play);
-        Bitmap video = thumb == null ? play : Util.mergeBitmaps(thumb, play);
-        imageSpan = new AreVideoSpan(sContext, video, uriPath, videoUrl);
-        int len = text.length();
-        text.append("\uFFFC");
-
-        text.setSpan(imageSpan, len, text.length(),
-                Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-    }
-
-
-    private static void startHr(Editable text) {
-        int len = text.length();
-        text.append("\u200B");
-        text.setSpan(new AreHrSpan(), len, text.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-    }
-
-    private static void startEmoji(Editable text, Attributes attributes) {
-        String src = attributes.getValue("", "src");
-        int emojiSrc = Integer.parseInt(src);
-        Drawable d = sContext.getResources().getDrawable(emojiSrc);
-        int size = d.getIntrinsicHeight();
-        EmojiSpan emojiSpan = new EmojiSpan(sContext, emojiSrc, size);
-        int len = text.length();
-        text.append("\uFFFC");
-        text.setSpan(emojiSpan, len, text.length(),
-                Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-    }
-
-    private void startFont(Editable text, Attributes attributes) {
-        String color = attributes.getValue("", "color");
-        String face = attributes.getValue("", "face");
-
-        if (!TextUtils.isEmpty(color)) {
-            int c = getHtmlColor(color);
-            if (c != -1) {
-                start(text, new Foreground(c | 0xFF000000));
-            }
-        }
-
-        if (!TextUtils.isEmpty(face)) {
-            start(text, new Font(face));
-        }
-    }
-
-    private static void endFont(Editable text) {
-        Font font = getLast(text, Font.class);
-        if (font != null) {
-            setSpanFromMark(text, font, new TypefaceSpan(font.mFace));
-        }
-
-        Foreground foreground = getLast(text, Foreground.class);
-        if (foreground != null) {
-            setSpanFromMark(text, foreground,
-                    new ForegroundColorSpan(foreground.mForegroundColor));
-        }
-    }
-
-    private static void startA(Editable text, Attributes attributes) {
-        String atKey = attributes.getValue("", "ukey"); // Can only be lower-case!!
-        String atName = attributes.getValue("", "uname");
-        String style = attributes.getValue("", "style");
-        int atColor = Color.BLUE;
-        if (style != null) {
-            Matcher m = getForegroundColorPattern().matcher(style);
-            if (m.find()) {
-                atColor = getHtmlColor(m.group(1));
-            }
-        }
-
-        if (!TextUtils.isEmpty(atKey)) {
-            start(text, new At(atKey, atName, atColor));
-            return;
-        }
-        String href = attributes.getValue("", "href");
-        start(text, new Href(href));
-    }
-
-    private static void endA(Editable text) {
-        At at = getLast(text, At.class);
-        if (at != null) {
-            AtItem atItem = new AtItem(at.mKey, at.mName, at.mColor);
-            AreAtSpan atSpan = new AreAtSpan(atItem);
-            setSpanFromMark(text, at, atSpan);
-            return;
-        }
-        Href h = getLast(text, Href.class);
-        if (h != null) {
-            if (h.mHref != null) {
-                setSpanFromMark(text, h, new AreUrlSpan((h.mHref)));
-            }
-        }
-    }
-
-//    private int getHtmlColor(String color) {
-//        if ((mFlags & Html.FROM_HTML_OPTION_USE_CSS_COLORS)
-//                == Html.FROM_HTML_OPTION_USE_CSS_COLORS) {
-//            Integer i = sColorMap.get(color.toLowerCase(Locale.US));
-//            if (i != null) {
-//                return i;
-//            }
-//        }
-//        return Color.getHtmlColor(color);
-//    }
 
     public void setDocumentLocator(Locator locator) {
     }
@@ -1546,31 +1249,11 @@ class HtmlToSpannedConverter implements ContentHandler {
     private static class Bold { }
     private static class Italic { }
     private static class Underline { }
-    private static class Strikethrough { }
     private static class Big { }
     private static class Small { }
     private static class Monospace { }
-    private static class Blockquote { }
-    private static class Super { }
-    private static class Sub { }
     private static class Bullet { }
     private static class Numeric { }
-
-    private static class Font {
-        public String mFace;
-
-        public Font(String face) {
-            mFace = face;
-        }
-    }
-
-    private static class Href {
-        public String mHref;
-
-        public Href(String href) {
-            mHref = href;
-        }
-    }
 
     private static class Foreground {
         private int mForegroundColor;
@@ -1588,14 +1271,6 @@ class HtmlToSpannedConverter implements ContentHandler {
         }
     }
 
-    private static class FontSize {
-        private int mFontSize;
-
-        public FontSize(int fontSize) {
-            mFontSize = fontSize;
-        }
-    }
-
     private static class Heading {
         private int mLevel;
 
@@ -1609,14 +1284,6 @@ class HtmlToSpannedConverter implements ContentHandler {
 
         public Newline(int numNewlines) {
             mNumNewlines = numNewlines;
-        }
-    }
-
-    private static class Alignment {
-        private Layout.Alignment mAlignment;
-
-        public Alignment(Layout.Alignment alignment) {
-            mAlignment = alignment;
         }
     }
 

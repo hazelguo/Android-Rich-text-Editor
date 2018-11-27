@@ -1,23 +1,12 @@
 package com.chinalwb.are.events;
 
-import android.content.Context;
 import android.text.Layout;
 import android.text.Spannable;
 import android.text.method.ArrowKeyMovementMethod;
 import android.text.method.LinkMovementMethod;
 import android.text.style.ClickableSpan;
-import android.text.style.URLSpan;
 import android.view.MotionEvent;
 import android.widget.TextView;
-
-import com.chinalwb.are.spans.ARE_Clickable_Span;
-import com.chinalwb.are.spans.AreAtSpan;
-import com.chinalwb.are.spans.AreImageSpan;
-import com.chinalwb.are.spans.AreUrlSpan;
-import com.chinalwb.are.spans.AreVideoSpan;
-import com.chinalwb.are.strategies.AreClickStrategy;
-import com.chinalwb.are.styles.ARE_Underline;
-import com.chinalwb.are.styles.ARE_Video;
 
 /**
  * This base MovementMethod is a compound product from {@link android.text.method.ArrowKeyMovementMethod} and {@link android.text.method.LinkMovementMethod}.
@@ -42,17 +31,6 @@ import com.chinalwb.are.styles.ARE_Video;
  * @author Created by SongHui (@BroadVision) on 2017/7/14.
  */
 public class AREMovementMethod extends ArrowKeyMovementMethod {
-
-    private AreClickStrategy mAreClickStrategy;
-
-    public AREMovementMethod() {
-        this(null);
-    }
-
-    public AREMovementMethod(AreClickStrategy areClickStrategy) {
-        this.mAreClickStrategy = areClickStrategy;
-    }
-
     @Override
     public boolean onTouchEvent(TextView widget, Spannable buffer, MotionEvent event) {
         // Supports android.text.method.LinkMovementMethod.onTouchEvent(TextView, Spannable, MotionEvent)'s
@@ -77,24 +55,6 @@ public class AREMovementMethod extends ArrowKeyMovementMethod {
             int line = layout.getLineForVertical(y);
             int off = layout.getOffsetForHorizontal(line, x);
 
-            ARE_Clickable_Span[] clickableSpans = buffer.getSpans(off, off, ARE_Clickable_Span.class);
-            Context context = widget.getContext();
-            boolean handled = false;
-            if (mAreClickStrategy != null && clickableSpans != null && clickableSpans.length > 0) {
-                if (clickableSpans[0] instanceof AreAtSpan) {
-                    handled = mAreClickStrategy.onClickAt(context, (AreAtSpan) clickableSpans[0]);
-                } else if (clickableSpans[0] instanceof AreImageSpan) {
-                    handled = mAreClickStrategy.onClickImage(context, (AreImageSpan) clickableSpans[0]);
-                } else if (clickableSpans[0] instanceof AreVideoSpan) {
-                    handled = mAreClickStrategy.onClickVideo(context, (AreVideoSpan) clickableSpans[0]);
-                } else if (clickableSpans[0] instanceof AreUrlSpan) {
-                    handled = mAreClickStrategy.onClickUrl(context, (AreUrlSpan) clickableSpans[0]);
-                }
-            }
-            if (handled) {
-                return true;
-            }
-
             ClickableSpan[] link = buffer.getSpans(off, off, ClickableSpan.class);
 
             if (link.length != 0) {
@@ -111,9 +71,5 @@ public class AREMovementMethod extends ArrowKeyMovementMethod {
             }*/
         }
         return super.onTouchEvent(widget, buffer, event);
-    }
-
-    public void setClickStrategy(AreClickStrategy areClickStrategy) {
-        this.mAreClickStrategy = areClickStrategy;
     }
 }

@@ -19,21 +19,6 @@ public class IndexActivity extends AppCompatActivity {
     private void initViews() {
         Button defaultToolbarButton = this.findViewById(R.id.defaultToolbar);
         openPage(defaultToolbarButton, ARE_DefaultToolbarActivity.class);
-
-        Button fullBottomButton = this.findViewById(R.id.fullBottomButton);
-        openPage(fullBottomButton, ARE_FullBottomActivity.class);
-
-        Button fullTopButton = this.findViewById(R.id.fullTopButton);
-        openPage(fullTopButton, ARE_FullTopActivity.class);
-
-        Button minBottomButton = this.findViewById(R.id.minBottomButton);
-        openPage(minBottomButton, ARE_MinBottomActivity.class);
-
-        Button minTopButton = this.findViewById(R.id.minTopButton);
-        openPage(minTopButton, ARE_MinTopActivity.class);
-
-        Button minHideButton = this.findViewById(R.id.minHideButton);
-        openPage(minHideButton, ARE_MinHideActivity.class);
     }
 
     private void openPage(Button button, final Class activity) {

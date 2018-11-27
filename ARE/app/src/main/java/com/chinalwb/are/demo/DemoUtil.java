@@ -8,8 +8,6 @@ import android.os.Build;
 import android.os.Environment;
 import android.support.v4.app.ActivityCompat;
 
-import com.chinalwb.are.styles.toolbar.ARE_Toolbar;
-
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -22,6 +20,10 @@ import java.util.Date;
  */
 
 public class DemoUtil {
+    /**
+     * Request code for inserting a video
+     */
+    public static final int REQ_VIDEO = 4;
 
     @SuppressLint("SimpleDateFormat")
     public static void saveHtml(Activity activity, String html) {
@@ -30,7 +32,7 @@ public class DemoUtil {
                     && activity.checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
                     != PackageManager.PERMISSION_GRANTED) {
                 //申请授权
-                ActivityCompat.requestPermissions(activity, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, ARE_Toolbar.REQ_VIDEO);
+                ActivityCompat.requestPermissions(activity, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQ_VIDEO);
                 return;
             }
 
