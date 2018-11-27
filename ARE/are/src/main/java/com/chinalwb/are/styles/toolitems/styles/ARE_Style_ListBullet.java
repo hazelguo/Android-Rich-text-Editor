@@ -5,17 +5,16 @@ import android.text.Spannable;
 import android.text.Spanned;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.widget.EditText;
 import android.widget.ImageView;
 
 import com.chinalwb.are.AREditText;
-import com.chinalwb.are.styles.ButtonCheckStatusUtil;
 import com.chinalwb.are.Constants;
 import com.chinalwb.are.Util;
 import com.chinalwb.are.spans.AreListSpan;
 import com.chinalwb.are.spans.ListBulletSpan;
 import com.chinalwb.are.spans.ListNumberSpan;
 import com.chinalwb.are.styles.ARE_ABS_FreeStyle;
+import com.chinalwb.are.styles.ButtonCheckStatusUtil;
 import com.chinalwb.are.styles.toolitems.IARE_ToolItem_Updater;
 
 import static com.chinalwb.are.Util.addZeroWidthSpaceStrSafe;
@@ -41,6 +40,7 @@ public class ARE_Style_ListBullet extends ARE_ABS_FreeStyle {
                 int[] selectionLines = Util.getCurrentSelectionLines(mEditText);
                 int start = Util.getThisLineStart(mEditText, selectionLines[0]);
                 int end = Util.getThisLineEnd(mEditText, selectionLines[1]);
+
 
                 // If all lines have bullet spans, remove all bullet spans. Otherwise, apply bullet
                 // spans to all lines.
@@ -80,14 +80,7 @@ public class ARE_Style_ListBullet extends ARE_ABS_FreeStyle {
                         ARE_Style_ListNumber.reNumberBehindListItemSpansForLine(mEditText, selectionLines[1]);
                     }
                 }
-
-                for (int line = selectionLines[0]; line <= selectionLines[1]; ++line) {
-                    int lineStart = Util.getThisLineStart(mEditText, line);
-                    // -- Change the content to trigger the editable redraw
-                    editable.insert(lineStart, Constants.ZERO_WIDTH_SPACE_STR);
-                    editable.delete(lineStart + 1, lineStart + 1);
-                    // -- End: Change the content to trigger the editable redraw
-                }
+                Util.triggerEditableRedraw(mEditText, editable, selectionLines);
             }
         });
     }
@@ -101,14 +94,12 @@ public class ARE_Style_ListBullet extends ARE_ABS_FreeStyle {
         }
 
         if (end > start) {
-            //
-            // User inputs
-            //
-            // To handle the \n case
-
-            // int totalLen = editable.toString().length();
-            // Util.log("ListNumber - total len == " + totalLen);
+            // The current editing is either:
+            //   1) A normal insertion or deletion of chars that doesn't require any special check
+            //   2) Or, a NEW_LINE insertion, which requires special checks.
             char c = editable.charAt(end - 1);
+            // Only do special checks if the user inputs \n (new line).
+            // No need for special checks if the user inputs normal characters.
             if (c == Constants.CHAR_NEW_LINE) {
                 int currListSpanIndex = listSpans.length - 1;
                 if (currListSpanIndex > -1) {
@@ -116,57 +107,52 @@ public class ARE_Style_ListBullet extends ARE_ABS_FreeStyle {
                     int currListSpanStart = editable.getSpanStart(currListSpan);
                     int currListSpanEnd = editable.getSpanEnd(currListSpan);
                     CharSequence currItemSpanContent = editable.subSequence(currListSpanStart, currListSpanEnd);
-
+                    // If the last list span is empty
+                    // For example:
+                    //   1. AA
+                    //       1. aa
+                    //       *. <User types \n here, which is an empty span>
+                    //   2. BB
+                    // Or:
+                    //   1. AA
+                    //       1. ZERO_WIDTH_SPACE_STR
+                    //       *. <User types \n here>
+                    //   2. BB
+                    //
+                    // We need to remove the current span (to make this line an empty line), and
+                    // renumber lines after it.
+                    // Note that we shouldn't add any new span to it.
+                    //
+                    // If the last list span is not empty
+                    // For example:
+                    //   *. aa <User types \n here, which is not an empty span>
+                    //   *. bb
+                    //   *. cc
+                    // Or:
+                    //   *. aa <User types \n here> aaaa
+                    //   *. bb
+                    //
+                    // We need to: 1) end the span right before the cursor, 2) start a new span at
+                    // the cursor, 3) update following list items
                     if (isEmptyListItemSpan(currItemSpanContent)) {
-                        //
-                        // Handle this case:
-                        // 1. A
-                        // 2. <User types \n here, at an empty span>
-                        //
-                        // The 2 chars are:
-                        // 1. ZERO_WIDTH_SPACE_STR
-                        // 2. \n
-                        //
-                        // We need to remove current span and do not re-create
-                        // span.
                         editable.removeSpan(currListSpan);
-
-                        //
-                        // Deletes the ZERO_WIDTH_SPACE_STR and \n
                         editable.delete(currListSpanStart, currListSpanEnd);
-                        updateCheckStatus();
+                        ARE_Style_ListNumber.reNumberBehindListItemSpansForOffset(mEditText, currListSpanStart);
                     } else {
-                        //
-                        // Handle this case:
-                        //
-                        // 1. A
-                        // 2. C
-                        // 3. D
-                        //
-                        // User types \n after 'A'
-                        // Then
-                        // We should see:
-                        // 1. A
-                        // 2.
-                        // 3. C
-                        // 4. D
-                        //
-                        // We need to end the first span
-                        // Then start the 2nd span
-                        // Then reNumber the following list item spans
                         if (end > currListSpanStart) {
                             editable.removeSpan(currListSpan);
                             editable.setSpan(currListSpan,
                                     currListSpanStart, end - 1,
-                                    Spanned.SPAN_INCLUSIVE_INCLUSIVE);
+                                    Spanned.SPAN_EXCLUSIVE_INCLUSIVE);
                         }
                         makeLineAsBullet(currListSpan.getDepth());
+                        // No need to reNumber because the current line and previous line are both
+                        // ListBullet, which won't affect any order.
                     }
                 } // #End of if it is in ListItemSpans..
             } // #End of user types \n
         } else {
-            //
-            // User deletes
+            // The in-editing word is empty (after editing)
             ListBulletSpan theFirstSpan = listSpans[0];
             if (listSpans.length > 0) {
                 FindFirstAndLastBulletSpan findFirstAndLastBulletSpan = new FindFirstAndLastBulletSpan(editable, listSpans).invoke();
@@ -275,7 +261,7 @@ public class ARE_Style_ListBullet extends ARE_ABS_FreeStyle {
             listItemSpan = new ListBulletSpan(
                     currSpans == null || currSpans.length == 0 ? 1 : currSpans[0].getDepth(), 0);
         }
-        editable.setSpan(listItemSpan, start, end, Spannable.SPAN_INCLUSIVE_INCLUSIVE);
+        editable.setSpan(listItemSpan, start, end, Spannable.SPAN_EXCLUSIVE_INCLUSIVE);
     }
 
     private class FindFirstAndLastBulletSpan {

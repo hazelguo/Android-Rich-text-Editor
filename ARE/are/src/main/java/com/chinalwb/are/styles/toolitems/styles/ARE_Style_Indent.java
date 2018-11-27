@@ -46,13 +46,7 @@ public abstract class ARE_Style_Indent extends ARE_ABS_FreeStyle {
                 ARE_Style_ListNumber.reNumberInsideListItemSpans(mEditText, selectionLines[0], selectionLines[1]);
                 ARE_Style_ListNumber.reNumberBehindListItemSpansForLine(mEditText, selectionLines[1]);
 
-                for (int line = selectionLines[0]; line <= selectionLines[1]; ++line) {
-                    int lineStart = Util.getThisLineStart(mEditText, line);
-                    // -- Change the content to trigger the editable redraw
-                    editable.insert(lineStart, Constants.ZERO_WIDTH_SPACE_STR);
-                    editable.delete(lineStart + 1, lineStart + 1);
-                    // -- End: Change the content to trigger the editable redraw
-                }
+                Util.triggerEditableRedraw(mEditText, editable, selectionLines);
             }
         });
     }

@@ -108,6 +108,10 @@ public class Util {
         return lines;
     }
 
+    public static int getLineCount(EditText editText) {
+        Layout layout = editText.getLayout();
+        return layout == null ? -1 : layout.getLineCount();
+    }
     /**
      * Returns the line start position of the current line (which cursor is focusing now).
      */
@@ -411,5 +415,18 @@ public class Util {
         int lineStart = Util.getThisLineStart(editText, line);
         int lineEnd = Util.getThisLineEnd(editText, line);
         return editable.getSpans(lineStart, lineEnd, AreListSpan.class);
+    }
+
+    public static void triggerEditableRedraw(EditText editText, Editable editable, int[] selectionLines) {
+        for (int line = selectionLines[0]; line <= selectionLines[1]; ++line) {
+            AreListSpan[] spans = Util.getListSpanForLine(editText, editable, line);
+            if (spans != null && spans.length > 0) {
+                int lastSpanEnd = editable.getSpanEnd(spans[spans.length - 1]);
+                // -- Change the content to trigger the editable redraw
+                editable.insert(lastSpanEnd, Constants.ZERO_WIDTH_SPACE_STR);
+                editable.delete(lastSpanEnd, lastSpanEnd+ 1);
+                // -- End: Change the content to trigger the editable redraw
+            }
+        }
     }
 }

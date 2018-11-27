@@ -121,13 +121,7 @@ public class ARE_Style_ListNumber extends ARE_ABS_FreeStyle {
                 // Reget the end of selection because the text length may change as we add/remove spans
                 reNumberBehindListItemSpansForLine(mEditText, selectionLines[1]);
 
-                for (int line = selectionLines[0]; line <= selectionLines[1]; ++line) {
-                    int lineStart = Util.getThisLineStart(mEditText, line);
-                    // -- Change the content to trigger the editable redraw
-                    editable.insert(lineStart, Constants.ZERO_WIDTH_SPACE_STR);
-                    editable.delete(lineStart + 1, lineStart + 1);
-                    // -- End: Change the content to trigger the editable redraw
-                }
+                Util.triggerEditableRedraw(mEditText, editable, selectionLines);
             }
         });
     }
@@ -168,7 +162,7 @@ public class ARE_Style_ListNumber extends ARE_ABS_FreeStyle {
                     //   2. <User types \n here, which is an empty span>
                     // Or:
                     //   1. ZERO_WIDTH_SPACE_STR
-                    //   2. \n
+                    //   2. <User types \n here>
                     //
                     // We need to remove the current span (to make this line an empty line)
                     // Note that we shouldn't add any new span to it.
@@ -195,14 +189,13 @@ public class ARE_Style_ListNumber extends ARE_ABS_FreeStyle {
                             editable.removeSpan(currListSpan);
                             editable.setSpan(currListSpan,
                                     currListSpanStart, end - 1,
-                                    Spanned.SPAN_INCLUSIVE_INCLUSIVE);
+                                    Spanned.SPAN_EXCLUSIVE_INCLUSIVE);
                         }
                         makeLineAsList(currListSpan);
                         reNumberBehindListItemSpansForOffset(mEditText, end);
                     }
                 }
             }
-            updateCheckStatus();
         } else {
             // The in-editing word is empty (after editing)
             int spanStart = editable.getSpanStart(listSpans[0]);
@@ -323,15 +316,15 @@ public class ARE_Style_ListNumber extends ARE_ABS_FreeStyle {
         reNumberBehindListItemSpansForOffset(mEditText, spanEnd);
     }
 
-    private ListNumberSpan makeLineAsList(ListNumberSpan prevSpan) {
-        return makeLineAsList(Util.getCurrentCursorLine(mEditText), prevSpan.getDepth(), prevSpan.getOrder() + 1);
+    private void makeLineAsList(ListNumberSpan prevSpan) {
+        makeLineAsList(Util.getCurrentCursorLine(mEditText), prevSpan.getDepth(), prevSpan.getOrder() + 1);
     }
 
     /**
      * @param depth the depth of the new line. If depth is -1, the actual depth will be either
      *              the current depth if a ListSpan exists, or 1 if no ListSpan exists
      */
-    private ListNumberSpan makeLineAsList(int line, int depth, int num) {
+    private void makeLineAsList(int line, int depth, int num) {
         Editable editable = mEditText.getText();
         int start = Util.getThisLineStart(mEditText, line);
         addZeroWidthSpaceStrSafe(editable, start);
@@ -350,9 +343,7 @@ public class ARE_Style_ListNumber extends ARE_ABS_FreeStyle {
             listItemSpan = new ListNumberSpan(
                     currSpans == null || currSpans.length == 0 ? 1 : currSpans[0].getDepth(), num);
         }
-        editable.setSpan(listItemSpan, start, end, Spannable.SPAN_INCLUSIVE_INCLUSIVE);
-
-        return listItemSpan;
+        editable.setSpan(listItemSpan, start, end, Spannable.SPAN_EXCLUSIVE_INCLUSIVE);
     }
 
     public static void reNumberInsideListItemSpans(EditText editText, int startLine, int endLine) {
@@ -445,7 +436,7 @@ public class ARE_Style_ListNumber extends ARE_ABS_FreeStyle {
     public static void reNumberBehindListItemSpansForLine(EditText editText, int line) {
         Editable editable = editText.getText();
         List<Integer> depthToOrder = getDepthToOrderList(editText, line);
-        for (int l = line + 1; ; l++) {
+        for (int l = line + 1; l <= Util.getLineCount(editText); l++) {
             int lineStart = Util.getThisLineStart(editText, l);
             AreListSpan[] spans = editable.getSpans(lineStart, lineStart + 1, AreListSpan.class);
             if (spans == null || spans.length == 0) {
