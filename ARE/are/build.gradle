@@ -45,7 +45,7 @@ dependencies {
 publish {
     groupId = 'com.asana.android'
     artifactId = 'are'
-    publishVersion = '0.0.3'
+    publishVersion = '0.0.4'
     desc = 'A customized version of the Android-Rich-text-Editor (https://github.com/chinalwb/Android-Rich-text-Editor)'
     website = 'https://github.com/hazelguo/Android-Rich-text-Editor'
     repoName = 'Asana'
