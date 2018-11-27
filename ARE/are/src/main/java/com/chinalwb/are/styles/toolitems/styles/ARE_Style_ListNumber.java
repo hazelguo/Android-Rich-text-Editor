@@ -56,16 +56,15 @@ public class ARE_Style_ListNumber extends ARE_ABS_FreeStyle {
      *           *. bb (selection start)
      *           *. cc (selection end)
      *           1. dd
-     *           We need to remove all the ListBulletSpan, and handle this case in the same way as
-     *           Case 1.
+     *           We need to convert the ListBulletSpan to a ListNumberSpan with the same depth.
      *    Case 4: the selection includes a mix of ListNumberSpan, ListBulletSpan, and no span
      *           1. aa
      *           2. bb (selection start)
      *           *. cc
      *           dd    (selection end)
      *           1. ee
-     *           We need to remove all the ListBulletSpan, and handle this case in the way similar
-     *           to Case 1. Note we don't need to (and shouldn't) add any ListNumberSpan to lines
+     *           See above 3 cases.
+     *           Note we don't need to (and shouldn't) add any ListNumberSpan to lines
      *           that already have it.
      */
     @Override
@@ -175,6 +174,9 @@ public class ARE_Style_ListNumber extends ARE_ABS_FreeStyle {
                     // Or:
                     //   1. aa <User types \n here> aaaa
                     //   2. bb
+                    // Or:
+                    //   1. <User types \n here>aaa
+                    //   2. bb
                     //
                     // We need to: 1) end the span right before the cursor, 2) start a new span at
                     // the cursor, 3) update following ListNumber items
@@ -187,6 +189,10 @@ public class ARE_Style_ListNumber extends ARE_ABS_FreeStyle {
                     } else {
                         if (end > currListSpanStart) {
                             editable.removeSpan(currListSpan);
+                            // The end of new span is "end - 1" not "end" because the two spans need
+                            // to be separated (by a invisible char). Otherwise, the second span
+                            // will be added to the first span, resulting only one span with
+                            // incorrect order.
                             editable.setSpan(currListSpan,
                                     currListSpanStart, end - 1,
                                     Spanned.SPAN_EXCLUSIVE_INCLUSIVE);

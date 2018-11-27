@@ -31,6 +31,36 @@ public class ARE_Style_ListBullet extends ARE_ABS_FreeStyle {
         setListenerForImageView(imageView);
     }
 
+    /**
+     * There are four cases for the selection (can be multiple lines):
+     *   Case 1: the selection doesn't have any bullet or number span.
+     *           1. aa
+     *           bb  (selection start)
+     *           cc  (selection end)
+     *           1. dd
+     *           We need to add the ListBulletSpan to the selection
+     *   Case 2: the selection includes only ListBulletSpan.
+     *           1. aa
+     *           *. bb (selection start)
+     *           *. cc (selection end)
+     *           *. dd
+     *           We need to remove the ListBulletSpan.
+     *   Case 3: the selection includes only ListNumberSpan.
+     *           1. aa
+     *           2. bb (selection start)
+     *           3. cc (selection end)
+     *           4. dd
+     *           We need to convert the ListNumberSpan to a ListBulletSpan with the same depth.
+     *    Case 4: the selection includes a mix of ListNumberSpan, ListBulletSpan, and no span
+     *           1. aa
+     *           2. bb (selection start)
+     *           *. cc
+     *           dd    (selection end)
+     *           1. ee
+     *           See above 3 cases
+     *           Note we don't need to (and shouldn't) add any ListBulletSpan to lines
+     *           that already have it.
+     */
     @Override
     public void setListenerForImageView(final ImageView imageView) {
         imageView.setOnClickListener(new OnClickListener() {
@@ -41,7 +71,6 @@ public class ARE_Style_ListBullet extends ARE_ABS_FreeStyle {
                 int start = Util.getThisLineStart(mEditText, selectionLines[0]);
                 int end = Util.getThisLineEnd(mEditText, selectionLines[1]);
 
-
                 // If all lines have bullet spans, remove all bullet spans. Otherwise, apply bullet
                 // spans to all lines.
                 if (getIsChecked()) {
@@ -51,16 +80,9 @@ public class ARE_Style_ListBullet extends ARE_ABS_FreeStyle {
                     }
                     updateCheckStatus(false);
                 } else {
+
                     boolean hasListNumberSpan = false;
                     for (int line = selectionLines[0]; line <= selectionLines[1]; ++line) {
-                        // Only add ListBulletSpan if there's no such span exists.
-                        // For example, the current text is:
-                        // * aa
-                        // bb
-                        //
-                        // Then the user selects both lines and clicks bullet icon. In this case, the
-                        // bullet span on "aa" should be kept, whereas, a bullet span should be
-                        // added to "bb".
                         int lineStart = Util.getThisLineStart(mEditText, line);
                         int lineEnd = Util.getThisLineEnd(mEditText, line);
                         AreListSpan[] spans = editable.getSpans(lineStart, lineEnd, AreListSpan.class);
@@ -141,6 +163,10 @@ public class ARE_Style_ListBullet extends ARE_ABS_FreeStyle {
                     } else {
                         if (end > currListSpanStart) {
                             editable.removeSpan(currListSpan);
+                            // The end of new span is "end - 1" not "end" because the two spans need
+                            // to be separated (by a invisible char). Otherwise, the second span
+                            // will be added to the first span, resulting only one span with
+                            // incorrect order.
                             editable.setSpan(currListSpan,
                                     currListSpanStart, end - 1,
                                     Spanned.SPAN_EXCLUSIVE_INCLUSIVE);
