@@ -2,7 +2,6 @@ package com.chinalwb.are.styles;
 
 import android.text.Editable;
 import android.text.Spanned;
-import android.util.Log;
 import android.widget.EditText;
 
 import com.chinalwb.are.styles.toolitems.IARE_ToolItem_Updater;
@@ -29,29 +28,9 @@ public abstract class ARE_ABS_Style<E> implements IARE_Style {
     public void applyStyle(Editable editable, int start, int end) {
         if (getIsChecked()) {
             if (end > start) {
-                //
                 // User inputs or user selects a range
-                E[] spans = editable.getSpans(start, end, clazzE);
-                E existingESpan = null;
-                if (spans.length > 0) {
-                    existingESpan = spans[0];
-                }
-
-                if (existingESpan == null) {
-                    checkAndMergeSpan(editable, start, end, clazzE);
-                } else {
-                    int existingESpanStart = editable.getSpanStart(existingESpan);
-                    int existingESpanEnd = editable.getSpanEnd(existingESpan);
-                    if (existingESpanStart <= start && existingESpanEnd >= end) {
-                        // The selection is just within an existing E span
-                        // Do nothing for this case
-                        changeSpanInsideStyle(editable, start, end, existingESpan);
-                    } else {
-                        checkAndMergeSpan(editable, start, end, clazzE);
-                    }
-                }
+                checkAndMergeSpan(editable, start, end, clazzE);
             } else {
-                //
                 // User deletes
                 E[] spans = editable.getSpans(start, end, clazzE);
                 if (spans.length > 0) {
@@ -81,16 +60,13 @@ public abstract class ARE_ABS_Style<E> implements IARE_Style {
                 }
             }
         } else {
-            //
             // User un-checks the style
-            if (end > start) {
-                //
-                // User inputs or user selects a range
-                E[] spans = editable.getSpans(start, end, clazzE);
-                if (spans.length > 0) {
+            if (end > start) { // User inputs or user selects a range
+                int nextSpanStart = editable.nextSpanTransition(start - 1, end, clazzE);
+                if (nextSpanStart < end) {
+                    E[] spans = editable.getSpans(start, end, clazzE);
                     E span = spans[0];
                     if (null != span) {
-                        //
                         // User stops the style, and wants to show
                         // un-UNDERLINE characters
                         int ess = editable.getSpanStart(span); // ess == existing span start
@@ -131,72 +107,39 @@ public abstract class ARE_ABS_Style<E> implements IARE_Style {
                         }
                     }
                 }
-            } else if (end == start) {
-                //
-                // User changes focus position
-                // Do nothing for this case
-            } else {
-                //
-                // User deletes
-                E[] spans = editable.getSpans(start, end, clazzE);
-                if (spans.length > 0) {
-                    E span = spans[0];
-                    if (null != span) {
-                        int eStart = editable.getSpanStart(span);
-                        int eEnd = editable.getSpanEnd(span);
-
-                        if (eStart >= eEnd) {
-                            //
-                            // Invalid case, this will never happen.
-                        } else {
-                            //
-                            // Do nothing, the default behavior is to extend
-                            // the span's area.
-                            // The proceeding characters should be also
-                            // UNDERLINE
-                            updateCheckStatus(true);
-                        }
-                    }
-                }
             }
+            //else if (end == start) { // User deletes or changes focus position. Do nothing for this case
         }
-    }
-
-    protected void changeSpanInsideStyle(Editable editable, int start, int end, E e) {
-        // Do nothing by default
-        Log.e("ARE", "in side a span!!");
     }
 
     private void checkAndMergeSpan(Editable editable, int start, int end, Class<E> clazzE) {
         E leftSpan = null;
-        E[] leftSpans = editable.getSpans(start, start, clazzE);
+        E[] leftSpans = editable.getSpans(start-1, start, clazzE);
         if (leftSpans.length > 0) {
             leftSpan = leftSpans[0];
         }
 
         E rightSpan = null;
-        E[] rightSpans = editable.getSpans(end, end, clazzE);
+        E[] rightSpans = editable.getSpans(end, end+1, clazzE);
         if (rightSpans.length > 0) {
             rightSpan = rightSpans[0];
         }
 
-
         int leftSpanStart = editable.getSpanStart(leftSpan);
         int rightSpanEnd = editable.getSpanEnd(rightSpan);
-        removeAllSpans(editable, start, end, clazzE);
+        int newSpanStart = start;
+        int newSpanEnd = end;
         if (leftSpan != null && rightSpan != null) {
-            E eSpan = newSpan();
-            editable.setSpan(eSpan, leftSpanStart, rightSpanEnd, Spanned.SPAN_EXCLUSIVE_INCLUSIVE);
-        } else if (leftSpan != null && rightSpan == null) {
-            E eSpan = newSpan();
-            editable.setSpan(eSpan, leftSpanStart, end, Spanned.SPAN_EXCLUSIVE_INCLUSIVE);
-        } else if (leftSpan == null && rightSpan != null) {
-            E eSpan = newSpan();
-            editable.setSpan(eSpan, start, rightSpanEnd, Spanned.SPAN_EXCLUSIVE_INCLUSIVE);
-        } else {
-            E eSpan = newSpan();
-            editable.setSpan(eSpan, start, end, Spanned.SPAN_EXCLUSIVE_INCLUSIVE);
+            newSpanStart = leftSpanStart;
+            newSpanEnd = rightSpanEnd;
+        } else if (leftSpan != null) {
+            newSpanStart = leftSpanStart;
+        } else if (rightSpan != null) {
+            newSpanEnd = rightSpanEnd;
         }
+
+        removeAllSpans(editable, newSpanStart, newSpanEnd, clazzE);
+        editable.setSpan(newSpan(), newSpanStart, newSpanEnd, Spanned.SPAN_EXCLUSIVE_INCLUSIVE);
     }
 
     private void removeAllSpans(Editable editable, int start, int end, Class<E> clazzE) {
