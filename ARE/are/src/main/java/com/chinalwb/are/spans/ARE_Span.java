@@ -5,5 +5,5 @@ package com.chinalwb.are.spans;
  */
 
 public interface ARE_Span {
-    public String getHtml();
+    String getHtml();
 }
