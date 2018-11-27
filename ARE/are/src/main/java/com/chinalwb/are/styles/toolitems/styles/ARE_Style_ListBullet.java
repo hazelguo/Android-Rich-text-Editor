@@ -41,39 +41,7 @@ public class ARE_Style_ListBullet extends ARE_ABS_FreeStyle {
                 int[] selectionLines = Util.getCurrentSelectionLines(mEditText);
                 int start = Util.getThisLineStart(mEditText, selectionLines[0]);
                 int end = Util.getThisLineEnd(mEditText, selectionLines[1]);
-                //
-                // Check if there is any ListNumberSpan. If so, remove existing ListNumberSpans
-                // in the selection and reorder ListNumberSpans after the selection.
-                //
-                // For example, the current text is:
-                // 1. aa
-                // 2. bb
-                // 3. cc
-                // 4. dd
-                //
-                // Then the user wants to convert "bb" & "cc" to ListBulletSpan, resulting:
-                // 1. aa
-                // * bb
-                // * cc
-                // 1. dd
-                //
-                // Note that "dd" has been restarted from 1
-                // Note that we use start & end instead of selectionStart & selectionEnd because
-                // partial selection should be treated as full-line selection in bullet.
-                ListNumberSpan[] listNumberSpans = editable.getSpans(start, end, ListNumberSpan.class);
-                if (listNumberSpans != null && listNumberSpans.length > 0) {
-                    // - Restart the count after the bullet span
-                    int len = listNumberSpans.length;
-                    ListNumberSpan lastListNumberSpan = listNumberSpans[len - 1];
-                    int lastListNumberSpanEnd = editable.getSpanEnd(lastListNumberSpan);
 
-                    ARE_Style_ListNumber.reNumberBehindListItemSpansForOffset(mEditText, lastListNumberSpanEnd);
-
-                    // - Remove all ListNumberSpan
-                    for (ListNumberSpan listNumberSpan : listNumberSpans) {
-                        editable.removeSpan(listNumberSpan);
-                    }
-                }
                 // If all lines have bullet spans, remove all bullet spans. Otherwise, apply bullet
                 // spans to all lines.
                 if (getIsChecked()) {
@@ -83,6 +51,7 @@ public class ARE_Style_ListBullet extends ARE_ABS_FreeStyle {
                     }
                     updateCheckStatus(false);
                 } else {
+                    boolean hasListNumberSpan = false;
                     for (int line = selectionLines[0]; line <= selectionLines[1]; ++line) {
                         // Only add ListBulletSpan if there's no such span exists.
                         // For example, the current text is:
@@ -94,12 +63,22 @@ public class ARE_Style_ListBullet extends ARE_ABS_FreeStyle {
                         // added to "bb".
                         int lineStart = Util.getThisLineStart(mEditText, line);
                         int lineEnd = Util.getThisLineEnd(mEditText, line);
-                        int nextSpanStart = editable.nextSpanTransition(lineStart - 1, lineEnd, ListBulletSpan.class);
-                        if (nextSpanStart >= lineEnd) {
+                        AreListSpan[] spans = editable.getSpans(lineStart, lineEnd, AreListSpan.class);
+                        if (spans != null && spans.length > 0) {
+                            AreListSpan span = spans[0];
+                            if (span instanceof ListNumberSpan) {
+                                hasListNumberSpan = true;
+                                editable.removeSpan(span);
+                                makeLineAsBullet(line, span.getDepth());
+                            }
+                        } else {
                             makeLineAsBullet(line, -1);
                         }
                     }
                     updateCheckStatus(true);
+                    if (hasListNumberSpan) {
+                        ARE_Style_ListNumber.reNumberBehindListItemSpansForLine(mEditText, selectionLines[1]);
+                    }
                 }
 
                 for (int line = selectionLines[0]; line <= selectionLines[1]; ++line) {

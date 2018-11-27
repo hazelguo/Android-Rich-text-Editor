@@ -9,13 +9,13 @@ import android.widget.EditText;
 import android.widget.ImageView;
 
 import com.chinalwb.are.AREditText;
-import com.chinalwb.are.styles.ButtonCheckStatusUtil;
 import com.chinalwb.are.Constants;
 import com.chinalwb.are.Util;
 import com.chinalwb.are.spans.AreListSpan;
 import com.chinalwb.are.spans.ListBulletSpan;
 import com.chinalwb.are.spans.ListNumberSpan;
 import com.chinalwb.are.styles.ARE_ABS_FreeStyle;
+import com.chinalwb.are.styles.ButtonCheckStatusUtil;
 import com.chinalwb.are.styles.toolitems.IARE_ToolItem_Updater;
 
 import java.util.ArrayList;
@@ -80,18 +80,6 @@ public class ARE_Style_ListNumber extends ARE_ABS_FreeStyle {
                 int start = Util.getThisLineStart(mEditText, selectionLines[0]);
                 int end = Util.getThisLineEnd(mEditText, selectionLines[1]);
 
-                // Remove all ListBulletSpan in the selection:
-                //   Convert Case 3 to Case 1.
-                //   Convert Case 4 to a similar case as Case 1 as I explained above.
-                // Note that we don't need to reorder any following ListNumberSpan yet as we will
-                // do it as part of the Case 1
-                ListBulletSpan[] listBulletSpans = editable.getSpans(start, end, ListBulletSpan.class);
-                if (listBulletSpans != null && listBulletSpans.length > 0) {
-                    for (ListBulletSpan listBulletSpan : listBulletSpans) {
-                        editable.removeSpan(listBulletSpan);
-                    }
-                }
-
                 // If all lines in the selection have number spans, remove all number span. (Case 2)
                 // Otherwise, apply number span to lines that don't have number span. (Case 1, 3, 4)
                 // Always reorder following number spans afterwards.
@@ -114,9 +102,16 @@ public class ARE_Style_ListNumber extends ARE_ABS_FreeStyle {
 
                         int lineStart = Util.getThisLineStart(mEditText, line);
                         int lineEnd = Util.getThisLineEnd(mEditText, line);
-                        ListNumberSpan[] spans = editable.getSpans(lineStart, lineEnd, ListNumberSpan.class);
+                        AreListSpan[] spans = editable.getSpans(lineStart, lineEnd, AreListSpan.class);
                         if (spans != null && spans.length > 0) {
-                            spans[0].setOrder(followingStartNumber);
+                            AreListSpan span = spans[0];
+                            if (span instanceof ListNumberSpan) {
+                                span.setOrder(followingStartNumber);
+                            } else {
+                                // Case 3 & 4
+                                editable.removeSpan(span);
+                                makeLineAsList(line, span.getDepth(), followingStartNumber);
+                            }
                         } else {
                             makeLineAsList(line, -1, followingStartNumber);
                         }
@@ -405,19 +400,28 @@ public class ARE_Style_ListNumber extends ARE_ABS_FreeStyle {
             depthToOrder.add(1);
         }
 
-        int lastNoListSpanLine = line;
-        for (; lastNoListSpanLine > -1; lastNoListSpanLine--) {
-            int lineStart = Util.getThisLineStart(editText, lastNoListSpanLine);
-            int lineEnd = Util.getThisLineEnd(editText, lastNoListSpanLine);
-            int nextSpanStart = editable.nextSpanTransition(lineStart - 1, lineEnd, AreListSpan.class);
-            if (nextSpanStart >= lineEnd) {
-                break;
+        int processedLine = line;
+        for (int i = AreListSpan.MAX_DEPTH; i >= AreListSpan.MIN_DEPTH; --i) {
+            while (processedLine >= 0) {
+                AreListSpan[] listSpans = Util.getListSpanForLine(editText, editable, processedLine);
+                if (listSpans == null || listSpans.length == 0) {
+                    break;
+                }
+                AreListSpan listSpan = listSpans[0];
+                if (listSpan.getDepth() < i) {
+                    depthToOrder.set(i, 1);
+                    break;
+                } else if (listSpan.getDepth() == i) {
+                    if (listSpan instanceof ListBulletSpan) {
+                        depthToOrder.set(i, 1);
+                    } else {
+                        depthToOrder.set(i, listSpan.getOrder() + 1);
+                    }
+                    processedLine --;
+                    break;
+                }
+                processedLine --;
             }
-        }
-
-        for (int l = lastNoListSpanLine + 1; l <= line; ++l) {
-            AreListSpan[] listSpans = Util.getListSpanForLine(editText, editable, l);
-            updateDepthToOrderFromSpan(listSpans[0], depthToOrder);
         }
 
         return depthToOrder;
@@ -457,7 +461,7 @@ public class ARE_Style_ListNumber extends ARE_ABS_FreeStyle {
     }
 
     /**
-     * @param offset the offset right before the pending update block. Thus, `offset` shouldn't be
+     * @param offset the offset right before the pending update block. Thus, `offset` won't be
      *               updated
      */
     public static void reNumberBehindListItemSpansForOffset(EditText editText, int offset) {
