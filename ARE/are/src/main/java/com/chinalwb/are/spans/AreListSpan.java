@@ -11,7 +11,7 @@ public abstract class AreListSpan implements LeadingMarginSpan {
     protected static final int HEADER_EXTRA_DIGIT_SPACING = 24;
     private static final int DEPTH_SPACING = 48;
 
-    enum ListType {
+    public enum ListType {
         OL {
             @Override
             protected void appendTagName(StringBuilder out) {
