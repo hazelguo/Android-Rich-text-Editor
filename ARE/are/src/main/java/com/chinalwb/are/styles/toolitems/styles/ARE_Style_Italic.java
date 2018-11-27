@@ -11,57 +11,30 @@ import com.chinalwb.are.styles.toolitems.IARE_ToolItem_Updater;
 
 public class ARE_Style_Italic extends ARE_ABS_Style<AreItalicSpan> {
 
-	private ImageView mItalicImageView;
+    public ARE_Style_Italic(AREditText editText, ImageView italicImage, IARE_ToolItem_Updater checkUpdater) {
+        super(editText, checkUpdater);
+        setListenerForImageView(italicImage);
+    }
 
-	private boolean mItalicChecked;
+    public void setEditText(AREditText editText) {
+        this.mEditText = editText;
+    }
 
-	private IARE_ToolItem_Updater mCheckUpdater;
+    @Override
+    public void setListenerForImageView(final ImageView imageView) {
+        imageView.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                updateCheckStatus(!mButtonChecked);
+                if (null != mEditText) {
+                    applyStyle(mEditText.getEditableText(), mEditText.getSelectionStart(), mEditText.getSelectionEnd());
+                }
+            }
+        });
+    }
 
-	public ARE_Style_Italic(AREditText editText, ImageView italicImage, IARE_ToolItem_Updater checkUpdater) {
-	    super(editText);
-		this.mEditText = editText;
-		this.mItalicImageView = italicImage;
-		this.mCheckUpdater = checkUpdater;
-		setListenerForImageView(this.mItalicImageView);
-	}
-
-	public void setEditText(AREditText editText) {
-		this.mEditText = editText;
-	}
-
-	@Override
-	public void setListenerForImageView(final ImageView imageView) {
-		imageView.setOnClickListener(new OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				mItalicChecked = !mItalicChecked;
-				if (null != mCheckUpdater) {
-					mCheckUpdater.onCheckStatusUpdate(mItalicChecked);
-				}
-				if (null != mEditText) {
-					applyStyle(mEditText.getEditableText(), mEditText.getSelectionStart(), mEditText.getSelectionEnd());
-				}
-			}
-		});
-	}
-
-	@Override
-	public ImageView getImageView() {
-		return this.mItalicImageView;
-	}
-
-	@Override
-	public void setChecked(boolean isChecked) {
-		this.mItalicChecked = isChecked;
-	}
-
-	@Override
-	public boolean getIsChecked() {
-		return this.mItalicChecked;
-	}
-
-	@Override
-	public AreItalicSpan newSpan() {
-		return new AreItalicSpan();
-	}
+    @Override
+    public AreItalicSpan newSpan() {
+        return new AreItalicSpan();
+    }
 }

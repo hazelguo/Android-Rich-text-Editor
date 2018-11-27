@@ -2,7 +2,6 @@ package com.chinalwb.are.styles.toolitems.styles;
 
 import android.text.Editable;
 import android.view.View;
-import android.widget.EditText;
 import android.widget.ImageView;
 
 import com.chinalwb.are.AREditText;
@@ -16,12 +15,9 @@ import com.chinalwb.are.styles.ARE_ABS_FreeStyle;
  */
 
 public abstract class ARE_Style_Indent extends ARE_ABS_FreeStyle {
-    private final ImageView mIndentRightImageView;
 
     public ARE_Style_Indent(AREditText editText, ImageView imageView) {
-        super(editText);
-        mEditText = editText;
-        mIndentRightImageView = imageView;
+        super(editText, null);
         setListenerForImageView(imageView);
     }
 
@@ -64,14 +60,5 @@ public abstract class ARE_Style_Indent extends ARE_ABS_FreeStyle {
     @Override
     public void applyStyle(Editable editable, int start, int end) {
 
-    }
-
-    @Override
-    public ImageView getImageView() {
-        return mIndentRightImageView;
-    }
-
-    @Override
-    public void setChecked(boolean isChecked) {
     }
 }

@@ -11,55 +11,26 @@ import com.chinalwb.are.styles.toolitems.IARE_ToolItem_Updater;
 
 public class ARE_Style_Underline extends ARE_ABS_Style<AreUnderlineSpan> {
 
-	private ImageView mUnderlineImageView;
+    public ARE_Style_Underline(AREditText editText, ImageView underlineImage, IARE_ToolItem_Updater checkUpdater) {
+        super(editText, checkUpdater);
+        setListenerForImageView(underlineImage);
+    }
 
-	private boolean mUnderlineChecked;
+    @Override
+    public void setListenerForImageView(final ImageView imageView) {
+        imageView.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                updateCheckStatus(!mButtonChecked);
+                if (null != mEditText) {
+                    applyStyle(mEditText.getEditableText(), mEditText.getSelectionStart(), mEditText.getSelectionEnd());
+                }
+            }
+        });
+    }
 
-	private AREditText mEditText;
-
-	private IARE_ToolItem_Updater mCheckUpdater;
-
-	public ARE_Style_Underline(AREditText editText, ImageView italicImage, IARE_ToolItem_Updater checkUpdater) {
-	    super(editText);
-		this.mEditText = editText;
-		this.mUnderlineImageView = italicImage;
-		this.mCheckUpdater = checkUpdater;
-		setListenerForImageView(this.mUnderlineImageView);
-	}
-
-	@Override
-	public void setListenerForImageView(final ImageView imageView) {
-		imageView.setOnClickListener(new OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				mUnderlineChecked = !mUnderlineChecked;
-				if (null != mCheckUpdater) {
-					mCheckUpdater.onCheckStatusUpdate(mUnderlineChecked);
-				}
-				if (null != mEditText) {
-					applyStyle(mEditText.getEditableText(), mEditText.getSelectionStart(), mEditText.getSelectionEnd());
-				}
-			}
-		});
-	}
-
-	@Override
-	public ImageView getImageView() {
-		return this.mUnderlineImageView;
-	}
-
-	@Override
-	public void setChecked(boolean isChecked) {
-		this.mUnderlineChecked = isChecked;
-	}
-
-	@Override
-	public boolean getIsChecked() {
-		return this.mUnderlineChecked;
-	}
-
-	@Override
-	public AreUnderlineSpan newSpan() {
-		return new AreUnderlineSpan();
-	}
+    @Override
+    public AreUnderlineSpan newSpan() {
+        return new AreUnderlineSpan();
+    }
 }

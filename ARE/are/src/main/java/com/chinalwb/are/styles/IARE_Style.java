@@ -21,11 +21,6 @@ public interface IARE_Style {
     void applyStyle(Editable editable, int start, int end);
 
     /**
-     * Returns the {@link ImageView} of this style.
-     */
-    ImageView getImageView();
-
-    /**
      * Sets if this style is checked.
      */
     void setChecked(boolean isChecked);
@@ -34,9 +29,4 @@ public interface IARE_Style {
      * Returns if current style is checked.
      */
     boolean getIsChecked();
-
-    /**
-     * Gets the EditText being operated.
-     */
-    EditText getEditText();
 }

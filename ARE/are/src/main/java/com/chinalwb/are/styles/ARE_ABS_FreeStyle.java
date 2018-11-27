@@ -1,29 +1,38 @@
 package com.chinalwb.are.styles;
 
-import android.content.Context;
 import android.widget.EditText;
+
+import com.chinalwb.are.styles.toolitems.IARE_ToolItem_Updater;
 
 public abstract class ARE_ABS_FreeStyle implements IARE_Style {
 
-	protected Context mContext;
-	protected EditText mEditText;
+    protected EditText mEditText;
+    private IARE_ToolItem_Updater mCheckUpdater;
+    protected boolean mButtonChecked;
 
-	public ARE_ABS_FreeStyle(Context context, EditText editText) {
-		mContext = context;
-		mEditText = editText;
-	}
+    public ARE_ABS_FreeStyle(EditText editText, IARE_ToolItem_Updater checkUpdater) {
+        mEditText = editText;
+        mCheckUpdater = checkUpdater;
+    }
 
-	public ARE_ABS_FreeStyle(EditText editText) {
-		this(editText.getContext(), editText);
-	}
+    protected void updateCheckStatus(boolean oldChecked, boolean newChecked) {
+        setChecked(oldChecked);
+        if (mCheckUpdater != null) {
+            mCheckUpdater.onCheckStatusUpdate(oldChecked, newChecked);
+        }
+    }
 
-	public EditText getEditText() {
-		return mEditText;
-	}
+    protected void updateCheckStatus(boolean newChecked) {
+        updateCheckStatus(mButtonChecked, newChecked);
+    }
 
-	// Dummy implementation
-	@Override
-	public boolean getIsChecked() {
-		return false;
-	}
+    @Override
+    public void setChecked(boolean isChecked) {
+        this.mButtonChecked = isChecked;
+    }
+
+    @Override
+    public boolean getIsChecked() {
+        return this.mButtonChecked;
+    }
 }

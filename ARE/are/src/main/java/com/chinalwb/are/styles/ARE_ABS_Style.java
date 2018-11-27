@@ -1,35 +1,28 @@
 package com.chinalwb.are.styles;
 
-import android.content.Context;
 import android.text.Editable;
 import android.text.Spanned;
 import android.util.Log;
 import android.widget.EditText;
 
-import com.chinalwb.are.Util;
+import com.chinalwb.are.styles.toolitems.IARE_ToolItem_Updater;
 
 import java.lang.reflect.ParameterizedType;
 
 public abstract class ARE_ABS_Style<E> implements IARE_Style {
 
-    protected Context mContext;
-
     protected EditText mEditText;
 
-    protected Class<E> clazzE;
+    private Class<E> clazzE;
 
-    public ARE_ABS_Style(Context context, EditText editText) {
-        mContext = context;
+    private IARE_ToolItem_Updater mCheckUpdater;
+
+    protected boolean mButtonChecked;
+
+    public ARE_ABS_Style(EditText editText, IARE_ToolItem_Updater checkUpdater) {
         mEditText = editText;
+        mCheckUpdater = checkUpdater;
         clazzE = (Class<E>) ((ParameterizedType) this.getClass().getGenericSuperclass()).getActualTypeArguments()[0];
-    }
-
-    public ARE_ABS_Style(EditText editText) {
-        this(editText.getContext(), editText);
-    }
-
-    public EditText getEditText() {
-        return mEditText;
     }
 
     @Override
@@ -74,14 +67,12 @@ public abstract class ARE_ABS_Style<E> implements IARE_Style {
 
                     int eStart = editable.getSpanStart(span);
                     int eEnd = editable.getSpanEnd(span);
-                    Util.log("eSpan start == " + eStart + ", eSpan end == " + eEnd);
 
                     if (eStart >= eEnd) {
                         editable.removeSpan(span);
                         extendPreviousSpan(editable, eStart);
 
-                        setChecked(false);
-                        ButtonCheckStatusUtil.updateCheckStatus(this, false);
+                        updateCheckStatus(false);
                     } else {
                         //
                         // Do nothing, the default behavior is to extend
@@ -163,8 +154,7 @@ public abstract class ARE_ABS_Style<E> implements IARE_Style {
                             // the span's area.
                             // The proceeding characters should be also
                             // UNDERLINE
-                            setChecked(true);
-                            ButtonCheckStatusUtil.updateCheckStatus(this, true);
+                            updateCheckStatus(true);
                         }
                     }
                 }
@@ -214,6 +204,24 @@ public abstract class ARE_ABS_Style<E> implements IARE_Style {
         for (E span : allSpans) {
             editable.removeSpan(span);
         }
+    }
+
+    protected void updateCheckStatus(boolean newChecked) {
+        boolean oldChecked = mButtonChecked;
+        setChecked(newChecked);
+        if (mCheckUpdater != null) {
+            mCheckUpdater.onCheckStatusUpdate(oldChecked, newChecked);
+        }
+    }
+
+    @Override
+    public void setChecked(boolean isChecked) {
+        this.mButtonChecked = isChecked;
+    }
+
+    @Override
+    public boolean getIsChecked() {
+        return this.mButtonChecked;
     }
 
     protected void extendPreviousSpan(Editable editable, int pos) {

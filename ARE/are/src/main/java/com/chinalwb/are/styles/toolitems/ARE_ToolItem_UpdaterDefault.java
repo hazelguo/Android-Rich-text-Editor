@@ -2,6 +2,7 @@ package com.chinalwb.are.styles.toolitems;
 
 import android.view.View;
 
+import com.chinalwb.are.Constants;
 import com.chinalwb.are.styles.IARE_Style;
 
 /**

@@ -11,21 +11,9 @@ import com.chinalwb.are.styles.toolitems.IARE_ToolItem_Updater;
 
 public class ARE_Style_Bold extends ARE_ABS_Style<AreBoldSpan> {
 
-    private ImageView mBoldImageView;
-
-    private boolean mBoldChecked;
-
-    private IARE_ToolItem_Updater mCheckUpdater;
-
     public ARE_Style_Bold(AREditText editText, ImageView boldImage, IARE_ToolItem_Updater checkUpdater) {
-        super(editText);
-        this.mBoldImageView = boldImage;
-        this.mCheckUpdater = checkUpdater;
-        setListenerForImageView(this.mBoldImageView);
-    }
-
-    public void setEditText(AREditText editText) {
-        this.mEditText = editText;
+        super(editText, checkUpdater);
+        setListenerForImageView(boldImage);
     }
 
     @Override
@@ -33,10 +21,7 @@ public class ARE_Style_Bold extends ARE_ABS_Style<AreBoldSpan> {
         imageView.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                mBoldChecked = !mBoldChecked;
-                if (mCheckUpdater != null) {
-                    mCheckUpdater.onCheckStatusUpdate(mBoldChecked);
-                }
+                updateCheckStatus(!mButtonChecked);
                 if (null != mEditText) {
                     applyStyle(mEditText.getEditableText(),
                             mEditText.getSelectionStart(),
@@ -44,21 +29,6 @@ public class ARE_Style_Bold extends ARE_ABS_Style<AreBoldSpan> {
                 }
             }
         });
-    }
-
-    @Override
-    public ImageView getImageView() {
-        return this.mBoldImageView;
-    }
-
-    @Override
-    public void setChecked(boolean isChecked) {
-        this.mBoldChecked = isChecked;
-    }
-
-    @Override
-    public boolean getIsChecked() {
-        return this.mBoldChecked;
     }
 
     @Override

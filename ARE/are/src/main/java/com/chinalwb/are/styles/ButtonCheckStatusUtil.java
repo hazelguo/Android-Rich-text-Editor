@@ -47,14 +47,4 @@ public class ButtonCheckStatusUtil {
         }
         return true;
     }
-
-    /**
-     * Updates the check status.
-     */
-    public static void updateCheckStatus(IARE_Style areStyle, boolean checked) {
-        areStyle.setChecked(checked);
-        View imageView = areStyle.getImageView();
-        int color = checked ? Constants.CHECKED_COLOR : Constants.UNCHECKED_COLOR;
-        imageView.setBackgroundColor(color);
-    }
 }

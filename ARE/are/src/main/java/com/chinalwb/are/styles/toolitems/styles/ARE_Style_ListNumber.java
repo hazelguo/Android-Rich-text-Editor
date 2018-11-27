@@ -31,17 +31,9 @@ import static com.chinalwb.are.Util.isEmptyListItemSpan;
  */
 public class ARE_Style_ListNumber extends ARE_ABS_FreeStyle {
 
-    private ImageView mListNumberImageView;
-
-    private IARE_ToolItem_Updater mCheckUpdater;
-
-    private boolean mListBulletChecked;
-
     public ARE_Style_ListNumber(AREditText editText, ImageView imageView, IARE_ToolItem_Updater checkUpdater) {
-        super(editText);
-        this.mListNumberImageView = imageView;
-        mCheckUpdater = checkUpdater;
-        setListenerForImageView(this.mListNumberImageView);
+        super(editText, checkUpdater);
+        setListenerForImageView(imageView);
     }
 
     /**
@@ -474,28 +466,5 @@ public class ARE_Style_ListNumber extends ARE_ABS_FreeStyle {
 
     private void updateCheckStatus() {
         updateCheckStatus(ButtonCheckStatusUtil.shouldCheckButton(mEditText, ListNumberSpan.class));
-    }
-
-    private void updateCheckStatus(boolean isChecked) {
-        boolean oldChecked = mListBulletChecked;
-        setChecked(isChecked);
-        if (mCheckUpdater != null) {
-            mCheckUpdater.onCheckStatusUpdate(oldChecked, isChecked);
-        }
-    }
-
-    @Override
-    public ImageView getImageView() {
-        return this.mListNumberImageView;
-    }
-
-    @Override
-    public void setChecked(boolean isChecked) {
-        mListBulletChecked = isChecked;
-    }
-
-    @Override
-    public boolean getIsChecked() {
-        return mListBulletChecked;
     }
 }
