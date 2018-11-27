@@ -282,19 +282,19 @@ public class ARE_Style_ListNumber extends ARE_ABS_FreeStyle {
             return;
         }
         Util.log("merge forward 2");
-        ListNumberSpan[] targetSpans = editable.getSpans(spanEnd, spanEnd + 1, ListNumberSpan.class);
+        AreListSpan[] targetSpans = editable.getSpans(spanEnd, spanEnd + 1, AreListSpan.class);
         // logAllListItems(editable, false);
         if (targetSpans == null || targetSpans.length == 0) {
             reNumberBehindListItemSpansForOffset(mEditText, spanEnd);
             return;
         }
-        ListNumberSpan firstTargetSpan = targetSpans[0];
-        ListNumberSpan lastTargetSpan = targetSpans[0];
+        AreListSpan firstTargetSpan = targetSpans[0];
+        AreListSpan lastTargetSpan = targetSpans[0];
 
         if (targetSpans.length > 0) {
             int firstTargetSpanNumber = firstTargetSpan.getOrder();
             int lastTargetSpanNumber = lastTargetSpan.getOrder();
-            for (ListNumberSpan lns : targetSpans) {
+            for (AreListSpan lns : targetSpans) {
                 int lnsNumber = lns.getOrder();
                 if (lnsNumber < firstTargetSpanNumber) {
                     firstTargetSpan = lns;
@@ -311,11 +311,11 @@ public class ARE_Style_ListNumber extends ARE_ABS_FreeStyle {
 
         int targetLength = targetEnd - targetStart;
         spanEnd = spanEnd + targetLength;
-        for (ListNumberSpan targetSpan : targetSpans) {
+        for (AreListSpan targetSpan : targetSpans) {
             editable.removeSpan(targetSpan);
         }
-        ListNumberSpan[] compositeSpans = editable.getSpans(spanStart, spanEnd, ListNumberSpan.class);
-        for (ListNumberSpan lns : compositeSpans) {
+        AreListSpan[] compositeSpans = editable.getSpans(spanStart, spanEnd, AreListSpan.class);
+        for (AreListSpan lns : compositeSpans) {
             editable.removeSpan(lns);
         }
         editable.setSpan(listSpan, spanStart, spanEnd, Spanned.SPAN_INCLUSIVE_INCLUSIVE);

@@ -179,7 +179,7 @@ public class ARE_Style_ListBullet extends ARE_ABS_FreeStyle {
             } // #End of user types \n
         } else {
             // The in-editing word is empty (after editing)
-            ListBulletSpan theFirstSpan = listSpans[0];
+            AreListSpan theFirstSpan = listSpans[0];
             if (listSpans.length > 0) {
                 FindFirstAndLastBulletSpan findFirstAndLastBulletSpan = new FindFirstAndLastBulletSpan(editable, listSpans).invoke();
                 theFirstSpan = findFirstAndLastBulletSpan.getFirstTargetSpan();
@@ -216,6 +216,7 @@ public class ARE_Style_ListBullet extends ARE_ABS_FreeStyle {
                     }
                 }
             }
+            ARE_Style_ListNumber.reNumberBehindListItemSpansForOffset(mEditText, spanEnd);
         }
 
         updateCheckStatus();
@@ -225,21 +226,20 @@ public class ARE_Style_ListBullet extends ARE_ABS_FreeStyle {
         updateCheckStatus(ButtonCheckStatusUtil.shouldCheckButton(mEditText, ListBulletSpan.class));
     }
 
-    protected void mergeForward(Editable editable, ListBulletSpan listSpan, int spanStart, int spanEnd) {
+    protected void mergeForward(Editable editable, AreListSpan listSpan, int spanStart, int spanEnd) {
         // Util.log("merge forward 1");
         if (editable.length() <= spanEnd + 1) {
             return;
         }
         // Util.log("merge forward 2");
-        ListBulletSpan[] targetSpans = editable.getSpans(
-                spanEnd, spanEnd + 1, ListBulletSpan.class);
+        AreListSpan[] targetSpans = editable.getSpans(spanEnd, spanEnd + 1, AreListSpan.class);
         if (targetSpans == null || targetSpans.length == 0) {
             return;
         }
 
         FindFirstAndLastBulletSpan findFirstAndLastBulletSpan = new FindFirstAndLastBulletSpan(editable, targetSpans).invoke();
-        ListBulletSpan firstTargetSpan = findFirstAndLastBulletSpan.getFirstTargetSpan();
-        ListBulletSpan lastTargetSpan = findFirstAndLastBulletSpan.getLastTargetSpan();
+        AreListSpan firstTargetSpan = findFirstAndLastBulletSpan.getFirstTargetSpan();
+        AreListSpan lastTargetSpan = findFirstAndLastBulletSpan.getLastTargetSpan();
         int targetStart = editable.getSpanStart(firstTargetSpan);
         int targetEnd = editable.getSpanEnd(lastTargetSpan);
         // Util.log("merge to remove span start == " + targetStart + ", target end = " + targetEnd);
@@ -247,11 +247,11 @@ public class ARE_Style_ListBullet extends ARE_ABS_FreeStyle {
         int targetLength = targetEnd - targetStart;
         spanEnd = spanEnd + targetLength;
 
-        for (ListBulletSpan targetSpan : targetSpans) {
+        for (AreListSpan targetSpan : targetSpans) {
             editable.removeSpan(targetSpan);
         }
-        ListBulletSpan[] compositeSpans = editable.getSpans(spanStart, spanEnd, ListBulletSpan.class);
-        for (ListBulletSpan lns : compositeSpans) {
+        AreListSpan[] compositeSpans = editable.getSpans(spanStart, spanEnd, AreListSpan.class);
+        for (AreListSpan lns : compositeSpans) {
             editable.removeSpan(lns);
         }
         editable.setSpan(listSpan, spanStart, spanEnd, Spanned.SPAN_INCLUSIVE_INCLUSIVE);
@@ -292,20 +292,20 @@ public class ARE_Style_ListBullet extends ARE_ABS_FreeStyle {
 
     private class FindFirstAndLastBulletSpan {
         private Editable editable;
-        private ListBulletSpan[] targetSpans;
-        private ListBulletSpan firstTargetSpan;
-        private ListBulletSpan lastTargetSpan;
+        private AreListSpan[] targetSpans;
+        private AreListSpan firstTargetSpan;
+        private AreListSpan lastTargetSpan;
 
-        public FindFirstAndLastBulletSpan(Editable editable, ListBulletSpan... targetSpans) {
+        public FindFirstAndLastBulletSpan(Editable editable, AreListSpan... targetSpans) {
             this.editable = editable;
             this.targetSpans = targetSpans;
         }
 
-        public ListBulletSpan getFirstTargetSpan() {
+        public AreListSpan getFirstTargetSpan() {
             return firstTargetSpan;
         }
 
-        public ListBulletSpan getLastTargetSpan() {
+        public AreListSpan getLastTargetSpan() {
             return lastTargetSpan;
         }
 
@@ -315,7 +315,7 @@ public class ARE_Style_ListBullet extends ARE_ABS_FreeStyle {
             if (targetSpans.length > 0) {
                 int firstTargetSpanStart = editable.getSpanStart(firstTargetSpan);
                 int lastTargetSpanEnd = editable.getSpanEnd(firstTargetSpan);
-                for (ListBulletSpan lns : targetSpans) {
+                for (AreListSpan lns : targetSpans) {
                     int lnsStart = editable.getSpanStart(lns);
                     int lnsEnd = editable.getSpanEnd(lns);
                     if (lnsStart < firstTargetSpanStart) {
