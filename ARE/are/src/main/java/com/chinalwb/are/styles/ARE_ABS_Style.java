@@ -80,53 +80,49 @@ public abstract class ARE_ABS_Style<E> implements IARE_Style {
         } else {
             // User un-checks the style
             if (end > start) { // User inputs or user selects a range
-                int nextSpanStart = editable.nextSpanTransition(start - 1, end, clazzE);
-                if (nextSpanStart < end) {
-                    E[] spans = editable.getSpans(start, end, clazzE);
+                E[] spans = editable.getSpans(start, end, clazzE);
+                if (spans.length > 0) {
                     E span = spans[0];
-                    if (null != span) {
-                        // User stops the style, and wants to show
-                        // un-UNDERLINE characters
-                        int ess = editable.getSpanStart(span); // ess == existing span start
-                        int ese = editable.getSpanEnd(span); // ese = existing span end
-                        if (start >= ese) {
-                            // User inputs to the end of the existing e span
-                            // End existing e span
-                            editable.removeSpan(span);
-                            editable.setSpan(span, ess, start - 1, Spanned.SPAN_EXCLUSIVE_INCLUSIVE);
-                        } else if (start == ess && end == ese) {
-                            // Case 1 desc:
-                            // *BBBBBB*
-                            // All selected, and un-check e
-                            editable.removeSpan(span);
-                        } else if (start > ess && end < ese) {
-                            // Case 2 desc:
-                            // BB*BB*BB
-                            // *BB* is selected, and un-check e
-                            editable.removeSpan(span);
-                            E spanLeft = newSpan();
-                            editable.setSpan(spanLeft, ess, start, Spanned.SPAN_EXCLUSIVE_INCLUSIVE);
-                            E spanRight = newSpan();
-                            editable.setSpan(spanRight, end, ese, Spanned.SPAN_EXCLUSIVE_INCLUSIVE);
-                        } else if (start == ess && end < ese) {
-                            // Case 3 desc:
-                            // *BBBB*BB
-                            // *BBBB* is selected, and un-check e
-                            editable.removeSpan(span);
-                            E newSpan = newSpan();
-                            editable.setSpan(newSpan, end, ese, Spanned.SPAN_EXCLUSIVE_INCLUSIVE);
-                        } else if (start > ess && end == ese) {
-                            // Case 4 desc:
-                            // BB*BBBB*
-                            // *BBBB* is selected, and un-check e
-                            editable.removeSpan(span);
-                            E newSpan = newSpan();
-                            editable.setSpan(newSpan, ess, start, Spanned.SPAN_EXCLUSIVE_INCLUSIVE);
-                        }
+                    // User stops the style, and wants to show
+                    // un-UNDERLINE characters
+                    int ess = editable.getSpanStart(span); // ess == existing span start
+                    int ese = editable.getSpanEnd(span); // ese = existing span end
+                    if (start >= ese) {
+                        // User inputs to the end of the existing e span
+                        // End existing e span
+                        editable.removeSpan(span);
+                        editable.setSpan(span, ess, start - 1, Spanned.SPAN_EXCLUSIVE_INCLUSIVE);
+                    } else if (start == ess && end == ese) {
+                        // Case 1 desc:
+                        // *BBBBBB*
+                        // All selected, and un-check e
+                        editable.removeSpan(span);
+                    } else if (start > ess && end < ese) {
+                        // Case 2 desc:
+                        // BB*BB*BB
+                        // *BB* is selected, and un-check e
+                        editable.removeSpan(span);
+                        E spanLeft = newSpan();
+                        editable.setSpan(spanLeft, ess, start, Spanned.SPAN_EXCLUSIVE_INCLUSIVE);
+                        E spanRight = newSpan();
+                        editable.setSpan(spanRight, end, ese, Spanned.SPAN_EXCLUSIVE_INCLUSIVE);
+                    } else if (start == ess && end < ese) {
+                        // Case 3 desc:
+                        // *BBBB*BB
+                        // *BBBB* is selected, and un-check e
+                        editable.removeSpan(span);
+                        E newSpan = newSpan();
+                        editable.setSpan(newSpan, end, ese, Spanned.SPAN_EXCLUSIVE_INCLUSIVE);
+                    } else if (start > ess && end == ese) {
+                        // Case 4 desc:
+                        // BB*BBBB*
+                        // *BBBB* is selected, and un-check e
+                        editable.removeSpan(span);
+                        E newSpan = newSpan();
+                        editable.setSpan(newSpan, ess, start, Spanned.SPAN_EXCLUSIVE_INCLUSIVE);
                     }
                 }
             }
-            //else if (end == start) { // User deletes or changes focus position. Do nothing for this case
         }
     }
 
