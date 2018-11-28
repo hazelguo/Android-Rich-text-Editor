@@ -29,7 +29,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".TextViewActivity" />
         <activity android:name=".ARE_DefaultToolbarActivity"
                   android:label="@string/title_activity_are__default_toolbar" />
     </application>

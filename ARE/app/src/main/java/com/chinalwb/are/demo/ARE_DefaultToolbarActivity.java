@@ -21,8 +21,6 @@ import com.chinalwb.are.styles.toolitems.ARE_ToolItem_ListNumber;
 import com.chinalwb.are.styles.toolitems.ARE_ToolItem_Underline;
 import com.chinalwb.are.styles.toolitems.IARE_ToolItem;
 
-import static com.chinalwb.are.demo.TextViewActivity.HTML_TEXT;
-
 public class ARE_DefaultToolbarActivity extends AppCompatActivity {
 
     private IARE_Toolbar mToolbar;
@@ -60,22 +58,7 @@ public class ARE_DefaultToolbarActivity extends AppCompatActivity {
         mEditText = this.findViewById(R.id.arEditText);
         mEditText.setToolbar(mToolbar);
 
-        setHtml();
-
         initToolbarArrow();
-    }
-
-    private void setHtml() {
-        String html = "<p style=\"text-align: center;\"><strong>New Feature in 0.1.2</strong></p>\n" +
-                "<p style=\"text-align: center;\">&nbsp;</p>\n" +
-                "<p style=\"text-align: left;\"><span style=\"color: #3366ff;\">In this release, you have a new usage with ARE.</span></p>\n" +
-                "<p style=\"text-align: left;\">&nbsp;</p>\n" +
-                "<p style=\"text-align: left;\"><span style=\"color: #3366ff;\">AREditText + ARE_Toolbar, you are now able to control the position of the input area and where to put the toolbar at and, what ToolItems you'd like to have in the toolbar. </span></p>\n" +
-                "<p style=\"text-align: left;\">&nbsp;</p>\n" +
-                "<p style=\"text-align: left;\"><span style=\"color: #3366ff;\">You can not only define the Toolbar (and it's style), you can also add your own ARE_ToolItem with your style into ARE.</span></p>\n" +
-                "<p style=\"text-align: left;\">&nbsp;</p>\n" +
-                "<p style=\"text-align: left;\"><span style=\"color: #ff00ff;\"><em><strong>Why not give it a try now?</strong></em></span></p>";
-        mEditText.fromHtml(html);
     }
 
     private void initToolbarArrow() {
@@ -124,15 +107,11 @@ public class ARE_DefaultToolbarActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         int menuId = item.getItemId();
         if (menuId == com.chinalwb.are.R.id.action_save) {
-            String html = this.mEditText.getHtml();
-            DemoUtil.saveHtml(this, html);
+            // Do nothing;
             return true;
         }
         if (menuId == R.id.action_show_tv) {
-            String html = this.mEditText.getHtml();
-            Intent intent = new Intent(this, TextViewActivity.class);
-            intent.putExtra(HTML_TEXT, html);
-            startActivity(intent);
+            // Do nothing;
             return true;
         }
         return super.onOptionsItemSelected(item);

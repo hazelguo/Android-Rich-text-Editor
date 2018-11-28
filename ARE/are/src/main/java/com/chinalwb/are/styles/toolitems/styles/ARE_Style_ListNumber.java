@@ -442,7 +442,7 @@ public class ARE_Style_ListNumber extends ARE_ABS_FreeStyle {
     public static void reNumberBehindListItemSpansForLine(EditText editText, int line) {
         Editable editable = editText.getText();
         List<Integer> depthToOrder = getDepthToOrderList(editText, line);
-        for (int l = line + 1; l <= Util.getLineCount(editText); l++) {
+        for (int l = line + 1; l < Util.getLineCount(editText); l++) {
             int lineStart = Util.getThisLineStart(editText, l);
             AreListSpan[] spans = editable.getSpans(lineStart, lineStart + 1, AreListSpan.class);
             if (spans == null || spans.length == 0) {
