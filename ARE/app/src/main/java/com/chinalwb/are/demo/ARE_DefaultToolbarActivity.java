@@ -1,6 +1,5 @@
 package com.chinalwb.are.demo;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
@@ -115,11 +114,5 @@ public class ARE_DefaultToolbarActivity extends AppCompatActivity {
             return true;
         }
         return super.onOptionsItemSelected(item);
-    }
-
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        mToolbar.onActivityResult(requestCode, resultCode, data);
     }
 }

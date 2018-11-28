@@ -24,8 +24,6 @@ public class AREditText extends AppCompatEditText {
 
     private static List<IARE_Style> sStylesList = new ArrayList<>();
 
-    private Context mContext;
-
     public AREditText(Context context) {
         this(context, null);
     }
@@ -36,16 +34,8 @@ public class AREditText extends AppCompatEditText {
 
     public AREditText(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
-        mContext = context;
-        initGlobalValues();
         init();
         setupListener();
-    }
-
-    private void initGlobalValues() {
-        int[] wh = Util.getScreenWidthAndHeight(mContext);
-        Constants.SCREEN_WIDTH = wh[0];
-        Constants.SCREEN_HEIGHT = wh[1];
     }
 
     private void init() {

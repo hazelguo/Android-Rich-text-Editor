@@ -1,14 +1,10 @@
 package com.chinalwb.are.styles.toolitems;
 
-import android.content.Context;
-import android.view.View;
+import android.support.annotation.Nullable;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 
 import com.chinalwb.are.AREditText;
-import com.chinalwb.are.Constants;
 import com.chinalwb.are.R;
-import com.chinalwb.are.Util;
 import com.chinalwb.are.spans.ListBulletSpan;
 import com.chinalwb.are.styles.ButtonCheckStatusUtil;
 import com.chinalwb.are.styles.IARE_Style;
@@ -19,42 +15,19 @@ import com.chinalwb.are.styles.toolitems.styles.ARE_Style_ListBullet;
  */
 
 public class ARE_ToolItem_ListBullet extends ARE_ToolItem_Abstract {
-
     @Override
-    public IARE_ToolItem_Updater getToolItemUpdater() {
-        if (mToolItemUpdater == null) {
-            mToolItemUpdater = new ARE_ToolItem_UpdaterListBullet(this, Constants.CHECKED_COLOR, Constants.UNCHECKED_COLOR);
-            setToolItemUpdater(mToolItemUpdater);
-        }
-        return mToolItemUpdater;
+    protected IARE_ToolItem_Updater getUpdater() {
+        return new ARE_ToolItem_UpdaterListBullet(this);
     }
 
     @Override
-    public IARE_Style getStyle() {
-        if (mStyle == null) {
-            AREditText editText = this.getEditText();
-            IARE_ToolItem_Updater toolItemUpdater = getToolItemUpdater();
-            mStyle = new ARE_Style_ListBullet(editText, (ImageView) mToolItemView, toolItemUpdater);
-        }
-        return mStyle;
+    protected IARE_Style getStyle(AREditText editText, ImageView imageView, @Nullable IARE_ToolItem_Updater updater) {
+        return new ARE_Style_ListBullet(editText, imageView, updater);
     }
 
     @Override
-    public View getView(Context context) {
-        if (null == context) {
-            return mToolItemView;
-        }
-        if (mToolItemView == null) {
-            ImageView imageView = new ImageView(context);
-            int size = Util.getPixelByDp(context, 40);
-            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(size, size);
-            imageView.setLayoutParams(params);
-            imageView.setImageResource(R.drawable.listbullet);
-            imageView.bringToFront();
-            mToolItemView = imageView;
-        }
-
-        return mToolItemView;
+    protected int getIconDrawableRes() {
+        return R.drawable.listbullet;
     }
 
     @Override

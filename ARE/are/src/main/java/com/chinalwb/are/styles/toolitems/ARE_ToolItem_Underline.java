@@ -1,21 +1,14 @@
 package com.chinalwb.are.styles.toolitems;
 
-import android.content.Context;
-import android.graphics.Typeface;
+import android.support.annotation.Nullable;
 import android.text.Editable;
 import android.text.style.CharacterStyle;
-import android.text.style.StyleSpan;
-import android.view.View;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 
 import com.chinalwb.are.AREditText;
-import com.chinalwb.are.Constants;
 import com.chinalwb.are.R;
-import com.chinalwb.are.Util;
 import com.chinalwb.are.spans.AreUnderlineSpan;
 import com.chinalwb.are.styles.IARE_Style;
-import com.chinalwb.are.styles.toolitems.styles.ARE_Style_Italic;
 import com.chinalwb.are.styles.toolitems.styles.ARE_Style_Underline;
 
 /**
@@ -23,42 +16,19 @@ import com.chinalwb.are.styles.toolitems.styles.ARE_Style_Underline;
  */
 
 public class ARE_ToolItem_Underline extends ARE_ToolItem_Abstract {
-
     @Override
-    public IARE_ToolItem_Updater getToolItemUpdater() {
-        if (mToolItemUpdater == null) {
-            mToolItemUpdater = new ARE_ToolItem_UpdaterDefault(this, Constants.CHECKED_COLOR, Constants.UNCHECKED_COLOR);
-            setToolItemUpdater(mToolItemUpdater);
-        }
-        return mToolItemUpdater;
+    protected IARE_ToolItem_Updater getUpdater() {
+        return new ARE_ToolItem_UpdaterDefault(this);
     }
 
     @Override
-    public IARE_Style getStyle() {
-        if (mStyle == null) {
-            AREditText editText = this.getEditText();
-            IARE_ToolItem_Updater toolItemUpdater = getToolItemUpdater();
-            mStyle = new ARE_Style_Underline(editText, (ImageView) mToolItemView, toolItemUpdater);
-        }
-        return mStyle;
+    protected IARE_Style getStyle(AREditText editText, ImageView imageView, @Nullable IARE_ToolItem_Updater updater) {
+        return new ARE_Style_Underline(editText, imageView, updater);
     }
 
     @Override
-    public View getView(Context context) {
-        if (null == context) {
-            return mToolItemView;
-        }
-        if (mToolItemView == null) {
-            ImageView imageView = new ImageView(context);
-            int size = Util.getPixelByDp(context, 40);
-            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(size, size);
-            imageView.setLayoutParams(params);
-            imageView.setImageResource(R.drawable.underline);
-            imageView.bringToFront();
-            mToolItemView = imageView;
-        }
-
-        return mToolItemView;
+    protected int getIconDrawableRes() {
+        return R.drawable.underline;
     }
 
     @Override

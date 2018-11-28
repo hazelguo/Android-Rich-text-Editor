@@ -2,7 +2,9 @@ package com.chinalwb.are.styles;
 
 import android.text.Editable;
 import android.text.Spanned;
+import android.view.View;
 import android.widget.EditText;
+import android.widget.ImageView;
 
 import com.chinalwb.are.styles.toolitems.IARE_ToolItem_Updater;
 
@@ -10,18 +12,34 @@ import java.lang.reflect.ParameterizedType;
 
 public abstract class ARE_ABS_Style<E> implements IARE_Style {
 
-    protected EditText mEditText;
+    private EditText mEditText;
 
     private Class<E> clazzE;
 
     private IARE_ToolItem_Updater mCheckUpdater;
 
-    protected boolean mButtonChecked;
+    private boolean mButtonChecked;
 
-    public ARE_ABS_Style(EditText editText, IARE_ToolItem_Updater checkUpdater) {
+    public ARE_ABS_Style(EditText editText, ImageView imageView, IARE_ToolItem_Updater checkUpdater) {
         mEditText = editText;
         mCheckUpdater = checkUpdater;
         clazzE = (Class<E>) ((ParameterizedType) this.getClass().getGenericSuperclass()).getActualTypeArguments()[0];
+        setListenerForImageView(imageView);
+    }
+
+    @Override
+    public void setListenerForImageView(final ImageView imageView) {
+        imageView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                updateCheckStatus(!mButtonChecked);
+                if (null != mEditText) {
+                    applyStyle(mEditText.getEditableText(),
+                            mEditText.getSelectionStart(),
+                            mEditText.getSelectionEnd());
+                }
+            }
+        });
     }
 
     @Override

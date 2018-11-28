@@ -8,14 +8,14 @@ public abstract class ARE_ABS_FreeStyle implements IARE_Style {
 
     protected EditText mEditText;
     private IARE_ToolItem_Updater mCheckUpdater;
-    protected boolean mButtonChecked;
+    private boolean mButtonChecked;
 
     public ARE_ABS_FreeStyle(EditText editText, IARE_ToolItem_Updater checkUpdater) {
         mEditText = editText;
         mCheckUpdater = checkUpdater;
     }
 
-    protected void updateCheckStatus(boolean oldChecked, boolean newChecked) {
+    private void updateCheckStatus(boolean oldChecked, boolean newChecked) {
         setChecked(oldChecked);
         if (mCheckUpdater != null) {
             mCheckUpdater.onCheckStatusUpdate(oldChecked, newChecked);

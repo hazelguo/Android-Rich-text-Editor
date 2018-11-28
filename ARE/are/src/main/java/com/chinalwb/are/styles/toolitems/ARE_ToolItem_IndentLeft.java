@@ -1,53 +1,43 @@
 package com.chinalwb.are.styles.toolitems;
 
-import android.content.Context;
-import android.view.View;
+import android.support.annotation.Nullable;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 
 import com.chinalwb.are.AREditText;
 import com.chinalwb.are.R;
-import com.chinalwb.are.Util;
 import com.chinalwb.are.styles.IARE_Style;
-import com.chinalwb.are.styles.toolitems.styles.ARE_Style_IndentLeft;
+import com.chinalwb.are.styles.toolitems.styles.ARE_Style_Indent;
 
 /**
  * Created by hazel G. on 26/11/2018.
  */
 
 public class ARE_ToolItem_IndentLeft extends ARE_ToolItem_Abstract {
-
     @Override
-    public IARE_ToolItem_Updater getToolItemUpdater() {
+    protected IARE_ToolItem_Updater getUpdater() {
         return null;
     }
 
     @Override
-    public IARE_Style getStyle() {
-        if (mStyle == null) {
-            AREditText editText = this.getEditText();
-            mStyle = new ARE_Style_IndentLeft(editText, (ImageView) mToolItemView);
-        }
-        return mStyle;
+    protected IARE_Style getStyle(AREditText editText,
+                                  ImageView imageView,
+                                  @Nullable IARE_ToolItem_Updater updater) {
+        return new ARE_Style_Indent(editText, imageView) {
+            @Override
+            protected int getChangeDirection() {
+                return -1;
+            }
+        };
     }
 
     @Override
-    public View getView(Context context) {
-        if (null == context) {
-            return mToolItemView;
-        }
-        if (mToolItemView == null) {
-            ImageView imageView = new ImageView(context);
-            int size = Util.getPixelByDp(context, 40);
-            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(size, size);
-            imageView.setLayoutParams(params);
-            imageView.setImageResource(R.drawable.indentleft);
-            imageView.bringToFront();
-            imageView.setVisibility(View.GONE);
-            mToolItemView = imageView;
-        }
+    protected int getIconDrawableRes() {
+        return R.drawable.indentleft;
+    }
 
-        return mToolItemView;
+    @Override
+    protected boolean visibleByDefault() {
+        return false;
     }
 
     @Override

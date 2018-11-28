@@ -1,9 +1,14 @@
 package com.chinalwb.are.styles.toolitems;
 
-import android.content.Intent;
+import android.content.Context;
+import android.support.annotation.DrawableRes;
+import android.support.annotation.Nullable;
 import android.view.View;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 
 import com.chinalwb.are.AREditText;
+import com.chinalwb.are.Util;
 import com.chinalwb.are.styles.IARE_Style;
 import com.chinalwb.are.styles.toolbar.IARE_Toolbar;
 
@@ -13,13 +18,13 @@ import com.chinalwb.are.styles.toolbar.IARE_Toolbar;
 
 public abstract class ARE_ToolItem_Abstract implements IARE_ToolItem {
 
-    IARE_Style mStyle;
+    private IARE_Style mStyle;
 
-    View mToolItemView;
-
-    IARE_ToolItem_Updater mToolItemUpdater;
+    private ImageView mToolItemView;
 
     private IARE_Toolbar mToolbar;
+
+    protected IARE_ToolItem_Updater mToolItemUpdater;
 
     @Override
     public IARE_Toolbar getToolbar() {
@@ -31,20 +36,60 @@ public abstract class ARE_ToolItem_Abstract implements IARE_ToolItem {
         mToolbar = toolbar;
     }
 
-    @Override
-    public void setToolItemUpdater(IARE_ToolItem_Updater toolItemUpdater) {
-        mToolItemUpdater = toolItemUpdater;
-    }
-
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        // Default do nothing
-        // Children classes can override if necessary
-        return;
-    }
-
-    public AREditText getEditText() {
+    protected AREditText getEditText() {
         return mToolbar.getEditText();
+    }
+
+    public IARE_ToolItem_Updater getToolItemUpdater() {
+        if (mToolItemUpdater == null) {
+            mToolItemUpdater = getUpdater();
+        }
+        return mToolItemUpdater;
+    }
+
+    protected abstract IARE_ToolItem_Updater getUpdater();
+
+
+    @Override
+    public IARE_Style getStyle() {
+        if (mStyle == null) {
+            AREditText editText = this.getEditText();
+            IARE_ToolItem_Updater toolItemUpdater = getToolItemUpdater();
+            mStyle = getStyle(editText, mToolItemView, toolItemUpdater);
+        }
+        return mStyle;
+    }
+
+    protected abstract IARE_Style getStyle(AREditText editText,
+                                           ImageView imageView,
+                                           @Nullable IARE_ToolItem_Updater updater);
+
+    @Override
+    public View getView(Context context) {
+        if (null == context) {
+            return mToolItemView;
+        }
+        if (mToolItemView == null) {
+            ImageView imageView = new ImageView(context);
+            int size = Util.getPixelByDp(context, 40);
+            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(size, size);
+            imageView.setLayoutParams(params);
+            imageView.setImageResource(getIconDrawableRes());
+            imageView.bringToFront();
+            if (!visibleByDefault()) {
+                imageView.setVisibility(View.GONE);
+            }
+            mToolItemView = imageView;
+        }
+
+        return mToolItemView;
+    }
+
+    @DrawableRes
+    protected abstract int getIconDrawableRes();
+
+    protected boolean visibleByDefault() {
+        return true;
     }
 
 }

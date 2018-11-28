@@ -1,10 +1,8 @@
 package com.chinalwb.are.styles.toolitems;
 
 import android.content.Context;
-import android.content.Intent;
 import android.view.View;
 
-import com.chinalwb.are.AREditText;
 import com.chinalwb.are.styles.IARE_Style;
 import com.chinalwb.are.styles.toolbar.IARE_Toolbar;
 
@@ -43,12 +41,4 @@ public interface IARE_ToolItem {
      * Gets the tool item updater instance, will be called when style being checked and unchecked.
      */
     IARE_ToolItem_Updater getToolItemUpdater();
-
-    /**
-     * Sets the tool item updater.
-     */
-    void setToolItemUpdater(IARE_ToolItem_Updater toolItemUpdater);
-
-    void onActivityResult(int requestCode, int resultCode, Intent data);
-
 }

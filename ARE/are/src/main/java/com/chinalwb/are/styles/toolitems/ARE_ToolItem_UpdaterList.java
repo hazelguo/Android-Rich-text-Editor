@@ -12,8 +12,8 @@ public abstract class ARE_ToolItem_UpdaterList extends ARE_ToolItem_UpdaterDefau
     private ARE_ToolItem_IndentLeft mToolItemIndentLeft;
     private ARE_ToolItem_IndentRight mToolItemIndentRight;
 
-    public ARE_ToolItem_UpdaterList(IARE_ToolItem toolItem, int checkedColor, int uncheckedColor) {
-        super(toolItem, checkedColor, uncheckedColor);
+    public ARE_ToolItem_UpdaterList(IARE_ToolItem toolItem) {
+        super(toolItem);
         List<IARE_ToolItem> toolitems = toolItem.getToolbar().getToolItems();
         for (IARE_ToolItem item : toolitems) {
             if (item instanceof ARE_ToolItem_IndentLeft) {
