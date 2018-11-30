@@ -17,7 +17,7 @@ import com.chinalwb.are.styles.toolitems.styles.ARE_Style_ListNumber;
 public class ARE_ToolItem_ListNumber extends ARE_ToolItem_Abstract {
     @Override
     protected IARE_ToolItem_Updater getUpdater() {
-        return new ARE_ToolItem_UpdaterList<>(this, ARE_ToolItem_ListBullet.class);
+        return new ARE_ToolItem_UpdaterList(this, ARE_ToolItem_ListBullet.class);
     }
 
     @Override

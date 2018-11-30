@@ -7,13 +7,13 @@ import com.chinalwb.are.styles.ButtonCheckStatusUtil;
 
 import java.util.List;
 
-public class ARE_ToolItem_UpdaterList<T extends IARE_ToolItem> extends ARE_ToolItem_UpdaterDefault {
+public class ARE_ToolItem_UpdaterList extends ARE_ToolItem_UpdaterDefault {
     private final AREditText mEditText;
     private ARE_ToolItem_IndentLeft mToolItemIndentLeft;
     private ARE_ToolItem_IndentRight mToolItemIndentRight;
-    private T mContrastToolItem;
+    private IARE_ToolItem mContrastToolItem;
 
-    public ARE_ToolItem_UpdaterList(IARE_ToolItem toolItem, Class<T> clazz) {
+    public ARE_ToolItem_UpdaterList(IARE_ToolItem toolItem, Class clazz) {
         super(toolItem);
         List<IARE_ToolItem> toolitems = toolItem.getToolbar().getToolItems();
         for (IARE_ToolItem item : toolitems) {
@@ -22,7 +22,7 @@ public class ARE_ToolItem_UpdaterList<T extends IARE_ToolItem> extends ARE_ToolI
             } else if (item instanceof ARE_ToolItem_IndentRight) {
                 mToolItemIndentRight = (ARE_ToolItem_IndentRight) item;
             } else if (clazz.isInstance(item)) {
-                mContrastToolItem = (T) item;
+                mContrastToolItem = item;
             }
         }
         mEditText = toolItem.getToolbar().getEditText();
